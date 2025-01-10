@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { COLORS } from './src/colors/colors.js';
-import { Heart, House, Pill, Planet} from 'phosphor-react-native';
+import { Heart, House, Pill, Planet, Plus} from 'phosphor-react-native';
 import { Button } from 'react-native-paper';
 
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
@@ -36,81 +36,84 @@ export default function App() {
     's-xlight': require('./assets/fonts/Sora/Sora-ExtraLight.ttf'),
   })
 
-  const Tab = createBottomTabNavigator();
   const [index, setIndex] = React.useState(0);
 
   const routes = [
     {
       key: 'home',
       title: 'Home',
-      focusedIcon: <House weight="fill" color="blue" size={28}/>,  // For focused state
-      unfocusedIcon: <House weight="regular" color={COLORS.primary} size={28}/>  // For unfocused state
+      focusedIcon: <House weight="fill" color={COLORS.teal700} size={28}/>,  // For focused state
+      unfocusedIcon: <House weight="regular" color={COLORS.grey500} size={28}/> // For unfocused state
     },
     {
       key: 'medication',
       title: 'Medication',
-      focusedIcon: <Pill weight="fill" />, 
-      unfocusedIcon: <Pill weight="regular" />
+      focusedIcon: <Pill weight="fill" color={COLORS.teal700} size={28} />, 
+      unfocusedIcon: <Pill weight="regular" color={COLORS.grey500} size={28}/>
     },
     {
       key: 'orbital',
       title: 'Orbital',
-      focusedIcon: <Planet weight="fill" />, 
-      unfocusedIcon: <Planet weight="regular" />
+      focusedIcon: <Planet weight="fill" color={COLORS.teal700} size={28}/>, 
+      unfocusedIcon: <Planet weight="regular" color={COLORS.grey500} size={28}/>
+    },
+    {
+      key: 'add',
+      title: 'Actions',
+      focusedIcon: <Plus weight="fill" color={COLORS.teal700} size={28}/>, 
+      unfocusedIcon: <Plus weight="regular" color={COLORS.grey500} size={28}/>
     }
   ];
 
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case 'home':
+        return <Home />;
+      case 'medication':
+        return <Medication />;
+      case 'orbital':
+        return <Orbital />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    // <NavigationContainer>
-    //   <Tab.Navigator
-    //     screenOptions={({ route }) => {
-    //       const tab = tabData.find(t => t.name === route.name);
-          
-    //       return {
-    //         headerShown: false,
-    //         tabBarLabel: tab.label,
-    //         tabBarIcon: ({ size, focused }) => {
-    //           return React.cloneElement(focused ? tab.focusedIcon : tab.unfocusedIcon, {
-    //             size
-    //           });
-    //         }
-    //       };
-    //     }}
-    //     tabBar={(props) => <CustomTabBar {...props} />}
-    //   >
-
-    //     <Tab.Screen name="Home" component={Home} />
-    //     <Tab.Screen name="Medication" component={Medication} />
-    //     <Tab.Screen name="Orbital" component={Orbital} />
-    //   </Tab.Navigator>
-    // </NavigationContainer>
-
     <SafeAreaProvider>
       <BottomNavigation
         navigationState={{ index, routes }}
         onIndexChange={setIndex} // Update state on tab change
-        renderScene={({ route }) => {
-          switch (route.key) {
-            case 'home':
-              return <Home />;
-            case 'medication':
-              return <Medication/>;
-            case 'orbital':
-              return <Orbital />;
-            default:
-              return null;
-          }
+        renderScene={renderScene}
+        renderIcon={({ route, focused }) => {
+          const routeData = routes.find(r => r.key === route.key);
+          return focused ? routeData.focusedIcon : routeData.unfocusedIcon;
+        }}
+        renderLabel={({ route, focused }) => (
+          <Text
+            style={{
+              fontFamily: 'bg-regular',
+              fontSize: 12,
+              color: focused ? COLORS.teal700 : COLORS.grey500, 
+              textAlign: 'center',
+            }}
+          >
+            {route.title}
+          </Text>
+        )}
+        barStyle={{  
+          elevation: 0,
+          height: 76,
+          backgroundColor: '#ffffff',
+          opacity: 0.98,
+          borderTopWidth: 1,
+          borderTopColor: COLORS.grey200
+        }}
+        activeIndicatorStyle={{
+          height: 34,
+          marginTop: 4,
+          backgroundColor: COLORS.teal100
         }}
       >
-        {/* Render the visual representation of the bottom navigation bar */}
-        <BottomNavigation.Bar
-          navigationState={{ index, routes }}
-          onTabPress={({ route }) => setIndex(routes.findIndex(r => r.key === route.key))}// Update the active tab
-          renderIcon={({ route, focused, color }) => {
-            const routeData = routes.find(r => r.key === route.key);
-            return focused ? routeData.focusedIcon : routeData.unfocusedIcon;
-          }}
-        />
       </BottomNavigation>
     </SafeAreaProvider>
   );
