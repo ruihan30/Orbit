@@ -49,6 +49,7 @@ export const COLORS = {
 
   // general
   bg: '#F3F3F3',
+  white: '#FFFFFF',
   error: '#D96C6C', 
   success: '#82B87C', 
   warning: '#F4D06F',

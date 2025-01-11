@@ -36,6 +36,11 @@ export default function App() {
     's-xlight': require('./assets/fonts/Sora/Sora-ExtraLight.ttf'),
   })
 
+  if (!fontsLoaded) {
+    return null; // Or show a loading spinner
+  }
+  
+
   const [index, setIndex] = React.useState(0);
 
   const routes = [
@@ -79,7 +84,7 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={styles.container}>
       <BottomNavigation
         navigationState={{ index, routes }}
         onIndexChange={setIndex} // Update state on tab change
@@ -106,7 +111,7 @@ export default function App() {
           backgroundColor: '#ffffff',
           opacity: 0.98,
           borderTopWidth: 1,
-          borderTopColor: COLORS.grey200
+          borderTopColor: COLORS.grey200,
         }}
         activeIndicatorStyle={{
           height: 34,
@@ -122,9 +127,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // backgroundColor: 'blue'
   },
 });
 
