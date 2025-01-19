@@ -6,6 +6,20 @@ export const styles = StyleSheet.create({
     backgroundColor: 'blue',
     padding: 0,
   },
+  flexRow: {
+    display: 'flex',  
+    flexDirection: 'row', 
+    alignItems: 'center',
+  },
+  flexColumn: {
+    display: 'flex',  
+    flexDirection: 'column', 
+    alignItems: 'center',
+  },
+  snackbar: {
+    backgroundColor: COLORS.teal900,
+    borderRadius: 10
+  },
 
   // Top Bar
   logo: {
@@ -73,17 +87,38 @@ export const styles = StyleSheet.create({
     height: 2000,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 16,
-  },
-  text: {
-    fontSize: 40,
+    padding: 12,
   },
   alarmItem: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    paddingTop: 4,
     borderWidth: 1,
     borderColor: COLORS.grey200,
-    borderRadius: 16,
-    marginBottom: 8
+    borderRadius: 20,
+    marginBottom: 8,
+    gap: 4
+  },
+  alarmMedication: {
+    backgroundColor: COLORS.pink150,
+    borderWidth: 1.5,
+    borderColor: COLORS.pink400,
+    flex: 1,
+    display: 'flex',  
+    flexDirection: 'row', 
+    alignItems: 'center',
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  alarmMedicationInfo: {
+    flex: 1,
+    height: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between'
   }
+
 
 });

@@ -3,5 +3,14 @@
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
-    <application android:usesCleartextTraffic="true" tools:targetApi="28" tools:ignore="GoogleAppIndexingWarning" tools:replace="android:usesCleartextTraffic" />
+    <application 
+        android:usesCleartextTraffic="true" 
+        tools:targetApi="28" 
+        tools:ignore="GoogleAppIndexingWarning" 
+        tools:replace="android:usesCleartextTraffic" 
+    >
+        <meta-data
+            android:name="com.google.android.gms.auth.api.v2.KEY"
+            android:value="[YOUR_WEB_CLIENT_ID]" />
+    </application>
 </manifest>

@@ -38,6 +38,7 @@ export const COLORS = {
 
   // accent pink
   pink100: '#FBF5F5',
+  pink150: '#F9EFEF',
   pink200: '#F7E9E9',
   pink300: '#F0D8D8',
   pink400: '#E5BCBC',
@@ -50,7 +51,7 @@ export const COLORS = {
   // general
   bg: '#F3F3F3',
   white: '#FFFFFF',
-  error: '#D96C6C', 
+  error: '#c44545', 
   success: '#82B87C', 
   warning: '#F4D06F',
 

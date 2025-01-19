@@ -1,6 +1,6 @@
-import React from 'react';
+import { React, useState }from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View,  } from 'react-native';
 import { useFonts } from 'expo-font';
 import { COLORS } from './src/colors/colors.js';
 import { Heart, House, Pill, Planet, Plus} from 'phosphor-react-native';
@@ -9,14 +9,20 @@ import { Button } from 'react-native-paper';
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation } from 'react-native-paper';
-import CustomTabBar from './src/components/CustomTabBar';
+import { createStackNavigator } from '@react-navigation/stack';
 
 import Home from './src/screens/Home';
 import Medication from './src/screens/Medication';
 import Orbital from './src/screens/Orbital';
+import Login from './src/screens/authentication/Login';
+import Signup from './src/screens/authentication/Signup';
+import Landing from './src/screens/authentication/Landing';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 
 export default function App() {
+
+  // Fonts
   const [fontsLoaded] = useFonts ({
     'bg-xbold': require('./assets/fonts/BricolageGrotesque/BricolageGrotesque-ExtraBold.ttf'),
     'bg-semibold': require('./assets/fonts/BricolageGrotesque/BricolageGrotesque-SemiBold.ttf'),
@@ -35,56 +41,56 @@ export default function App() {
     's-light': require('./assets/fonts/Sora/Sora-Light.ttf'),
     's-xlight': require('./assets/fonts/Sora/Sora-ExtraLight.ttf'),
   })
-
   if (!fontsLoaded) {
-    return null; // Or show a loading spinner
+    return null;
   }
-  
 
-  const [index, setIndex] = React.useState(0);
+  // Nav Bar
+  const NavBar = () => {
+    const [index, setIndex] = useState(0);
+    const routes = [
+      {
+        key: 'home',
+        title: 'Home',
+        focusedIcon: <House weight="fill" color={COLORS.teal700} size={28}/>,  // For focused state
+        unfocusedIcon: <House weight="regular" color={COLORS.grey500} size={28}/> // For unfocused state
+      },
+      {
+        key: 'medication',
+        title: 'Medication',
+        focusedIcon: <Pill weight="fill" color={COLORS.teal700} size={28} />, 
+        unfocusedIcon: <Pill weight="regular" color={COLORS.grey500} size={28}/>
+      },
+      {
+        key: 'orbital',
+        title: 'Orbital',
+        focusedIcon: <Planet weight="fill" color={COLORS.teal700} size={28}/>, 
+        unfocusedIcon: <Planet weight="regular" color={COLORS.grey500} size={28}/>
+      },
+      {
+        key: 'add',
+        title: 'Add',
+        focusedIcon: <Plus weight="fill" color={COLORS.teal700} size={28}/>, 
+        unfocusedIcon: <Plus weight="regular" color={COLORS.grey500} size={28}/>
+      }
+    ];
 
-  const routes = [
-    {
-      key: 'home',
-      title: 'Home',
-      focusedIcon: <House weight="fill" color={COLORS.teal700} size={28}/>,  // For focused state
-      unfocusedIcon: <House weight="regular" color={COLORS.grey500} size={28}/> // For unfocused state
-    },
-    {
-      key: 'medication',
-      title: 'Medication',
-      focusedIcon: <Pill weight="fill" color={COLORS.teal700} size={28} />, 
-      unfocusedIcon: <Pill weight="regular" color={COLORS.grey500} size={28}/>
-    },
-    {
-      key: 'orbital',
-      title: 'Orbital',
-      focusedIcon: <Planet weight="fill" color={COLORS.teal700} size={28}/>, 
-      unfocusedIcon: <Planet weight="regular" color={COLORS.grey500} size={28}/>
-    },
-    {
-      key: 'add',
-      title: 'Actions',
-      focusedIcon: <Plus weight="fill" color={COLORS.teal700} size={28}/>, 
-      unfocusedIcon: <Plus weight="regular" color={COLORS.grey500} size={28}/>
-    }
-  ];
+    const renderScene = ({ route }) => {
+      switch (route.key) {
+        case 'home':
+          return <Home />;
+        case 'medication':
+          return <Medication />;
+        case 'orbital':
+          return <Orbital />;
+        // case 'add':
+        //     return <Login />;
+        default:
+          return null;
+      }
+    };
 
-  const renderScene = ({ route }) => {
-    switch (route.key) {
-      case 'home':
-        return <Home />;
-      case 'medication':
-        return <Medication />;
-      case 'orbital':
-        return <Orbital />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <SafeAreaProvider style={styles.container}>
+    return (
       <BottomNavigation
         navigationState={{ index, routes }}
         onIndexChange={setIndex} // Update state on tab change
@@ -120,6 +126,23 @@ export default function App() {
         }}
       >
       </BottomNavigation>
+    );
+  }
+
+  const Stack = createStackNavigator();
+
+  return (
+    <SafeAreaProvider style={styles.container}>
+      <AuthProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
+            <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
+            <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
+            <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
@@ -127,7 +150,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: 'blue'
   },
 });
 

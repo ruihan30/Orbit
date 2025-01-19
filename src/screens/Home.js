@@ -1,12 +1,19 @@
 import { useState, memo, useCallback } from 'react';
 import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
-import { House, Bell, User, CaretDown, Minus, ArrowCircleDown } from 'phosphor-react-native';
+import { House, Bell, User, CaretDown, Minus, ArrowCircleDown, Plus } from 'phosphor-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Appbar } from 'react-native-paper';
 import { COLORS } from '../colors/colors.js';
+import { Chip } from '../components/chip.js';
+import { Button } from '../components/button.js';
 import { styles } from '../styles/styles.js';
+import { useNavigation } from '@react-navigation/native';
+import Logo from '../../assets/logo_name_nopad.svg';
+import { useAuth } from '../utilities/authProvider.js';
 
 export default function Home() {
+  const navigation = useNavigation();
+  const { user, loading } = useAuth();
 
   const getCurrentWeek = () => {
     const today = new Date(); 
@@ -38,6 +45,12 @@ export default function Home() {
   const { today, week } = getCurrentWeek();
   const [selectedDay, setSelectedDay] = useState(null);
 
+  if (loading) {}
+  if (!user) {
+    navigation.navigate('Landing');
+    return null;
+  }
+
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       
@@ -52,9 +65,7 @@ export default function Home() {
           icon='account-outline'
           onPress={() => {}} 
         />
-        <View style={{flex: 1, alignItems:'center'}}>
-          <Image source={require('../../assets/logo_name_nopad.png')} style={styles.logo} />
-        </View>
+        <View style={{flex: 1, alignItems:'center'}}><Logo height='22'></Logo></View>
         <Appbar.Action style={styles.action} 
           icon={() => 
             <View style={styles.iconWrapper}>
@@ -93,37 +104,68 @@ export default function Home() {
           </View>
         </View>
       </View>
+
+      <Button size='large' type='fill' label='Test' onPress={() => console.log(user.stsTokenManager.accessToken)}></Button>
       
       {/* Alarms */}
       <ScrollView style={styles.alarms}>
         
-        <Pressable style={{display: 'flex', gap: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
-          <View style={{display: 'flex', gap: 8, flexDirection: 'row', alignItems: 'center'}}>
+        {/* Selecting user */}
+        <Pressable style={[styles.flexRow, {gap: 16, marginBottom: 8}]} >
+          <View style={[styles.flexRow, {gap: 8}]}>
             <View style={{height: 32, width: 32, backgroundColor: COLORS.grey300, borderRadius: 20}}></View>
             <Text style={{fontFamily: 's-semibold', fontSize: 14, color: COLORS.grey800}}>Tan Xiao Ming</Text>
           </View>
           <CaretDown size={20} color={COLORS.grey800} weight='regular' />
         </Pressable>
-          
+        
+        {/* Pressable alarm, based on time */}
         <Pressable style={styles.alarmItem}>
-          <View style={{display: 'flex', gap: 16, flexDirection: 'row', alignItems: 'center'}}>
+          <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between'}]}>
             <Switch></Switch>
-            <Text style={{fontFamily: 's-semibold', fontSize: 24, color: COLORS.grey800, flex: 1, textAlign: 'center'}}>10.30 am</Text>
+            <Text style={{fontFamily: 's-semibold', fontSize: 24, color: COLORS.grey800, textAlign: 'center'}}>10.30 am</Text>
             <Minus size={28} color={COLORS.grey800} weight='regular' />
           </View>
           
+          <View style={{gap: 16}}>
+            <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
+              <View style={styles.alarmMedication}>
+                <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 20,}}></View>
+                <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
+                  <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>Paracetamol</Text>
+                  <View>
+                    <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
+                    <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={[styles.flexRow, {gap: 4, width: '100%'}]}>
+                <Chip label='Drowsiness'/>
+                <Chip label='Fatigue'/>
+              </View>
+            </View>
+
+            <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
+              <View style={styles.alarmMedication}>
+                <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 20}}></View>
+                <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
+                  <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>Paracetamol</Text>
+                  <View>
+                    <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
+                    <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={[styles.flexRow, {gap: 4, width: '100%'}]}>
+                <Chip label='Drowsiness'/>
+                <Chip label='Fatigue'/>
+              </View>
+            </View>
+          </View>
+
           
         </Pressable>
 
-        <Text style={styles.text}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-        </Text>
       </ScrollView>
 
     </SafeAreaProvider>
