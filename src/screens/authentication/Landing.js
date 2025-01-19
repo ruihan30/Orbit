@@ -8,9 +8,6 @@ import Logo from '../../../assets/logo_name.svg';
 import Background from '../../../assets/landing_bg.svg';
 import { styles } from '../../styles/styles.js';
 import { useNavigation } from '@react-navigation/native';
-import LinearGradient from 'react-native-linear-gradient';
-import { BlurView } from 'expo-blur';
-
 
 export default function Landing() {
   const navigation = useNavigation();

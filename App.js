@@ -17,6 +17,7 @@ import Orbital from './src/screens/Orbital';
 import Login from './src/screens/authentication/Login';
 import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
+import AlarmDetails from './src/screens/alarmDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 
@@ -140,6 +141,7 @@ export default function App() {
             <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
             <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
             <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
+            <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

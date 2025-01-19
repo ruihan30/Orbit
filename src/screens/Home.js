@@ -10,6 +10,8 @@ import { styles } from '../styles/styles.js';
 import { useNavigation } from '@react-navigation/native';
 import Logo from '../../assets/logo_name_nopad.svg';
 import { useAuth } from '../utilities/authProvider.js';
+import { getAuth, signOut } from 'firebase/auth';
+import useAuthStore from '../store/useAuthStore.js';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -50,6 +52,15 @@ export default function Home() {
     navigation.navigate('Landing');
     return null;
   }
+
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+      console.log('User logged out');
+      useAuthStore.getState().logout();
+      navigation.navigate('Landing');
+    });
+  };
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
@@ -106,6 +117,7 @@ export default function Home() {
       </View>
 
       <Button size='large' type='fill' label='Test' onPress={() => console.log(user.stsTokenManager.accessToken)}></Button>
+      <Button size='large' type='fill' label='Logout' onPress={handleLogout}></Button>
       
       {/* Alarms */}
       <ScrollView style={styles.alarms}>
@@ -129,7 +141,7 @@ export default function Home() {
           
           <View style={{gap: 16}}>
             <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
-              <View style={styles.alarmMedication}>
+              <Pressable style={styles.alarmMedication} onPress={() => navigation.navigate('AlarmDetails')}>
                 <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 20,}}></View>
                 <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
                   <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>Paracetamol</Text>
@@ -138,7 +150,7 @@ export default function Home() {
                     <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
                   </View>
                 </View>
-              </View>
+              </Pressable>
               <View style={[styles.flexRow, {gap: 4, width: '100%'}]}>
                 <Chip label='Drowsiness'/>
                 <Chip label='Fatigue'/>

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import create from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useAuthStore = create(
   persist(
@@ -25,7 +25,9 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage', // Key to store in AsyncStorage
-      getStorage: () => AsyncStorage, // Specify AsyncStorage as the storage engine
+      // getStorage: () => AsyncStorage, // Specify AsyncStorage as the storage engine
+      storage: createJSONStorage(() => AsyncStorage)
+      // getStorage: createJSONStorage(() => AsyncStorage)
     }
   )
 );
