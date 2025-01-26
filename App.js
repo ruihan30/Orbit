@@ -1,10 +1,12 @@
-import { React, useState }from 'react';
+import { React, useState, useCallback, useEffect,useRef }from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,  } from 'react-native';
 import { useFonts } from 'expo-font';
 import { COLORS } from './src/colors/colors.js';
 import { Heart, House, Pill, Planet, Plus} from 'phosphor-react-native';
-import { Button } from 'react-native-paper';
+import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
+import { BottomSheetProvider, useBottomSheet } from './src/components/bottomSheet.js';
+import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -135,19 +137,46 @@ export default function App() {
   return (
     <SafeAreaProvider style={styles.container}>
       <AuthProvider>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
-            <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
-            <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
-            <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
-            <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
-          </Stack.Navigator>
-        </NavigationContainer>
+        <GestureHandlerRootView>
+          <BottomSheetProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
+                <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
+                <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
+                <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
+                <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
+              </Stack.Navigator>
+            </NavigationContainer>
+            <BottomSheetComponent/>
+          </BottomSheetProvider>
+        </GestureHandlerRootView>
       </AuthProvider>
     </SafeAreaProvider>
   );
 }
+
+const BottomSheetComponent = () => {
+  const bottomSheetRef = useBottomSheet();
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+
+  return (
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={-1}
+      snapPoints={['10%', '85%']}
+      enablePanDownToClose={true}
+      onChange={handleSheetChanges}
+      style={{zIndex: 100}}
+    >
+      <BottomSheetView>
+      <Text style={{fontSize: 40}}>Hello from Bottom Sheet! Hello from Bottom Sheet!</Text>
+      </BottomSheetView>
+    </BottomSheet>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

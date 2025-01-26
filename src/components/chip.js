@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'bg-medium',
     color: COLORS.pink600,
   },
