@@ -17,6 +17,9 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useBottomSheet } from '../components/bottomSheet.js';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { db } from '../utilities/firebaseConfig.js';
+import { collection, getDocs, addDoc } from "firebase/firestore";
+
 export default function Home() {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
@@ -89,6 +92,28 @@ export default function Home() {
   const openBottomSheet = () => bottomSheetRef.current.expand()
   const closeBottomSheet = () => bottomSheetRef.current.close()
 
+  const addUser = async () => {
+    try {
+      const docRef = await addDoc(collection(db, "user"), {
+        name: "Tan Xiao Ming",
+        email: "xiaoming@example.com",
+        age: 25,
+        createdAt: new Date(),
+      });
+  
+      console.log("Document written with ID: ", docRef.id);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
+
+  async function fetchData() {
+    const querySnapshot = await getDocs(collection(db, "user"));
+    querySnapshot.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
+    });
+  }
+
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>
@@ -115,8 +140,9 @@ export default function Home() {
           />
         </Appbar.Header>
 
-        <Button size='large' type='fill' label='Test' onPress={openBottomSheet}></Button>
-        <Button size='large' type='fill' label='Logout' onPress={() => console.log(today)}></Button>
+        <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
+        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
+        <Button size='small' type='fill' label='Logout' onPress={() => console.log(today)}></Button>
         
         <ScrollView 
           stickyHeaderIndices={[1]}

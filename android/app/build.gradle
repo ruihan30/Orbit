@@ -181,6 +181,7 @@ dependencies {
     // Example: Add Firebase Authentication (or other Firebase SDKs you need)
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-firestore'
 
     implementation 'com.google.android.gms:play-services-auth:20.0.1'
 }
