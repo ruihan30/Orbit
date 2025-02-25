@@ -42,6 +42,13 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  header: {
+    fontFamily: 's-semibold',
+    color: COLORS.grey800,
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16
+  },
 
   // Calendar
   calendar: {
