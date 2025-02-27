@@ -16,14 +16,18 @@
     "@react-native-firebase/auth": "^21.6.2",
     "@react-native-firebase/firestore": "^21.6.2",
     "@react-native-google-signin/google-signin": "^13.1.0",
+    "@react-native-seoul/masonry-list": "^1.4.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
+    "axios": "^1.8.1",
     "expo": "~52.0.7",
     "expo-blur": "~14.0.2",
     "expo-font": "~13.0.1",
+    "expo-linear-gradient": "~14.0.2",
     "expo-status-bar": "~2.0.0",
     "firebase": "^11.1.0",
+    "openai": "^4.85.4",
     "phosphor-react-native": "^2.2.3",
     "react": "18.3.1",
     "react-native": "0.76.5",
@@ -35,11 +39,12 @@
     "react-native-screens": "^4.5.0",
     "react-native-svg": "^15.11.1",
     "react-native-vector-icons": "^10.2.0",
-    "zustand": "^5.0.3",
-    "expo-linear-gradient": "~14.0.2"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "metro-react-native-babel-preset": "^0.77.0",
+    "react-native-dotenv": "^3.4.11",
     "react-native-svg-transformer": "^1.5.0"
   },
   "private": true

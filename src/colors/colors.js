@@ -55,4 +55,13 @@ export const COLORS = {
   success: '#82B87C', 
   warning: '#F4D06F',
 
+  // rainbow
+  fadedRed: 'rgba(215,67,67,0.10)',
+  fadedOrange: 'rgba(244,162,89,0.2)',
+  fadedYellow: 'rgba(246,208,111,0.25)',
+  fadedGreen: 'rgba(122,203,129,0.15)',
+  fadedBlue: 'rgba(93,163,250,0.15)',
+  fadedPurple: 'rgba(133,102,224,0.15)',
+  fadedPink: 'rgba(118,104,207,0.15)',
+
 };

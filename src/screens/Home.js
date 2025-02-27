@@ -119,7 +119,7 @@ export default function Home() {
       <GestureHandlerRootView>
         
         {/* Top Bar */}
-        <Appbar.Header mode='center-aligned'> 
+        <Appbar.Header mode='center-aligned' style={{backgroundColor: COLORS.white}}> 
           <Appbar.Action style={styles.profile}
             // icon={() => 
             //   <View style={styles.iconWrapper}>
@@ -140,9 +140,9 @@ export default function Home() {
           />
         </Appbar.Header>
 
-        <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
+        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
         <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
-        <Button size='small' type='fill' label='Logout' onPress={() => console.log(today)}></Button>
+        <Button size='small' type='fill' label='Logout' onPress={() => console.log(today)}></Button> */}
         
         <ScrollView 
           stickyHeaderIndices={[1]}
@@ -152,7 +152,7 @@ export default function Home() {
           {/* Calendar */}
           <View style={{paddingHorizontal: 10, paddingTop: 12}}>
             <View style={styles.calendar}>
-              <Text style={{fontFamily: 's-semibold', fontSize: 16, color: COLORS.grey450, textAlign: 'center'}}> December </Text>
+              <Text style={{fontFamily: 's-semibold', fontSize: 16, color: COLORS.grey450, textAlign: 'center'}}> {today.month} </Text>
               <View style={styles.week}>
                 {week.map((dayData, index) => {
                   const isToday = dayData.date === today.date && dayData.month === today.month;

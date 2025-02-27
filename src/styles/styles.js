@@ -1,5 +1,8 @@
 import { StyleSheet } from 'react-native';
 import {COLORS} from '../colors/colors.js';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   test: {
@@ -41,6 +44,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  header: {
+    fontFamily: 's-semibold',
+    color: COLORS.grey800,
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16
   },
 
   // Calendar
@@ -222,5 +232,44 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 20,
   },
+
+  // Medication
+  medicationGrid:{
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+  },
+  medicationRipple: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 8,
+    alignSelf: 'start',
+    width: (width/2)-16,
+    marginTop: 8
+  },
+  medicationText: {
+    fontFamily: 'bg-medium',
+    fontSize: 14,
+    color: COLORS.grey600
+  },
+
+  // Orbital
+  profileImg: {
+    width: 48,
+    height: 48,
+    backgroundColor: COLORS.grey300,
+    borderRadius: 100,
+  },
+  reminderBoard: {
+    backgroundColor: COLORS.white,
+    flex: 1,
+    borderTopLeftRadius: 24,
+    padding: 8,
+  },
+  reminderCard: {
+    padding: 10,
+    gap: 20,
+    borderRadius: 16,
+    margin: 4
+  }
 
 });

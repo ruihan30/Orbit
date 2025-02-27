@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,  } from 'react-native';
 import { useFonts } from 'expo-font';
 import { COLORS } from './src/colors/colors.js';
-import { Heart, House, Pill, Planet, Plus} from 'phosphor-react-native';
+import { Sparkle, House, Pill, Planet, Plus} from 'phosphor-react-native';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import { BottomSheetProvider, useBottomSheet } from './src/components/bottomSheet.js';
 import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -16,6 +16,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Home from './src/screens/Home';
 import Medication from './src/screens/Medication';
 import Orbital from './src/screens/Orbital';
+import CareBot from './src/screens/CareBot.js';
 import Login from './src/screens/authentication/Login';
 import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
@@ -71,11 +72,18 @@ export default function App() {
         unfocusedIcon: <Planet weight="regular" color={COLORS.grey500} size={28}/>
       },
       {
+        key: 'carebot',
+        title: 'CareBot',
+        focusedIcon: <Sparkle weight="fill" color={COLORS.teal700} size={28}/>, 
+        unfocusedIcon: <Sparkle weight="regular" color={COLORS.grey500} size={28}/>
+      },
+      {
         key: 'add',
         title: 'Add',
         focusedIcon: <Plus weight="fill" color={COLORS.teal700} size={28}/>, 
         unfocusedIcon: <Plus weight="regular" color={COLORS.grey500} size={28}/>
-      }
+      },
+      
     ];
 
     const renderScene = ({ route }) => {
@@ -86,6 +94,8 @@ export default function App() {
           return <Medication />;
         case 'orbital':
           return <Orbital />;
+        case 'carebot':
+            return <CareBot />;
         // case 'add':
         //     return <Login />;
         default:
