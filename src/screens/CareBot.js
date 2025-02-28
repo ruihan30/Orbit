@@ -7,7 +7,6 @@ import { Appbar, TouchableRipple } from 'react-native-paper';
 import { Bell } from 'phosphor-react-native';
 import { styles } from '../styles/styles.js';
 import MasonryList from '@react-native-seoul/masonry-list';
-import OpenAI from "openai";
 
 export default function CareBot() {
   const [userInput, setUserInput] = useState('');
@@ -20,31 +19,31 @@ export default function CareBot() {
   //   setResponse(aiResponse);
   // };
 
-  const handleSend = async () => {
-    if (!userInput.trim()) return;  // Don't send empty input
+  // const handleSend = async () => {
+  //   if (!userInput.trim()) return;  // Don't send empty input
 
-    setLoading(true);  // Show loading indicator
-    try {
-      // Send the user's input to OpenAI
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant.' },
-          { role: 'user', content: userInput },
-        ],
-        store: true,
-      });
+  //   setLoading(true);  // Show loading indicator
+  //   try {
+  //     // Send the user's input to OpenAI
+  //     const completion = await openai.chat.completions.create({
+  //       model: 'gpt-4o-mini',
+  //       messages: [
+  //         { role: 'system', content: 'You are a helpful assistant.' },
+  //         { role: 'user', content: userInput },
+  //       ],
+  //       store: true,
+  //     });
 
-      // Get the AI's response
-      const aiResponse = completion.choices[0].message.content;
-      setResponse(aiResponse);  // Set the response to display
-    } catch (error) {
-      console.error('GPT API error:', error);
-      setResponse('Error: Something went wrong!');
-    } finally {
-      setLoading(false);  // Hide loading indicator
-    }
-  };
+  //     // Get the AI's response
+  //     const aiResponse = completion.choices[0].message.content;
+  //     setResponse(aiResponse);  // Set the response to display
+  //   } catch (error) {
+  //     console.error('GPT API error:', error);
+  //     setResponse('Error: Something went wrong!');
+  //   } finally {
+  //     setLoading(false);  // Hide loading indicator
+  //   }
+  // };
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
@@ -80,7 +79,7 @@ export default function CareBot() {
             onChangeText={setUserInput}
             multiline
           />
-          <Button title="Ask AI" onPress={handleSend} />
+          <Button title="Ask AI" onPress={console.log('User logged out')} />
           {response ? <Text>{response}</Text> : null}
         </View>
 
