@@ -7,19 +7,12 @@ import { Appbar, TouchableRipple } from 'react-native-paper';
 import { Bell } from 'phosphor-react-native';
 import { styles } from '../styles/styles.js';
 import MasonryList from '@react-native-seoul/masonry-list';
+import { CohereClientV2 } from 'cohere-ai';
 
 export default function CareBot() {
   const [userInput, setUserInput] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false); 
-
-  // const handleAskAI = async () => {
-  //   if (question.trim() === '') return;
-  //   const aiResponse = await askGPT(question);
-  //   setResponse(aiResponse);
-  // };
-
-  // const handleSend = async () => {
   //   if (!userInput.trim()) return;  // Don't send empty input
 
   //   setLoading(true);  // Show loading indicator
@@ -44,6 +37,34 @@ export default function CareBot() {
   //     setLoading(false);  // Hide loading indicator
   //   }
   // };
+
+  // const cohere = require('cohere-ai');
+  // require('dotenv').config(); 
+  const cohere = new CohereClientV2({
+    token: process.env.COHERE_API_KEY,  // Replace <<apiKey>> with your actual API key
+  });
+
+  const sendToCohere = async () => {
+    setLoading(true);
+    try {
+      const apiResponse = await cohere.chat({
+        model: 'command-r-plus',
+        messages: [
+          {
+            role: 'user',
+            content: userInput,
+          },
+        ],
+      });
+      setResponse(apiResponse); // Store the response
+      console.log('success');
+    } catch (error) {
+      console.error('Error communicating with Cohere:', error);
+      setResponse(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
@@ -79,8 +100,9 @@ export default function CareBot() {
             onChangeText={setUserInput}
             multiline
           />
-          <Button title="Ask AI" onPress={console.log('User logged out')} />
-          {response ? <Text>{response}</Text> : null}
+          <Button title="Ask AI" onPress={() => console.log('API Key:', process.env.COHERE_API_KEY)} />
+          <Button title="Ask AI" onPress={sendToCohere} />
+          {response ? <Text>{response.message.content[0].text}</Text> : null}
         </View>
 
 
