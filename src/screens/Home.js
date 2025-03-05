@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { db } from '../utilities/firebaseConfig.js';
 import { collection, getDocs, addDoc } from "firebase/firestore";
 
-export default function Home() {
+export default function Home({ onNavigateTo }) {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -140,9 +140,9 @@ export default function Home() {
           />
         </Appbar.Header>
 
-        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
+        <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
         <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
-        <Button size='small' type='fill' label='Logout' onPress={() => console.log(today)}></Button> */}
+        <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
         
         <ScrollView 
           stickyHeaderIndices={[1]}
@@ -218,7 +218,7 @@ export default function Home() {
                   <TouchableRipple 
                     style={styles.alarmMedicationRipple} 
                     rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('AlarmDetails')}
+                    onPress={() => navigation.navigate('MedicationDetails')}
                     borderless={true}
                   >
                     <View style={styles.alarmMedication}>

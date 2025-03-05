@@ -13,7 +13,7 @@ export const Chip = ({ label, style, textStyle}) => {
 const styles = StyleSheet.create({
   chip: {
     borderWidth: 1,
-    borderColor: COLORS.pink600,
+    borderColor: COLORS.pink400,
     paddingHorizontal: 8,
     paddingBottom: 2,
     borderRadius: 20, 

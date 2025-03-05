@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import {COLORS} from '../colors/colors.js';
 import { Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   test: {
@@ -183,7 +183,7 @@ export const styles = StyleSheet.create({
   daysActive: {
     height: 44,
     width: 44,
-    backgroundColor: COLORS.pink500,
+    backgroundColor: COLORS.pink550,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 40,
@@ -207,16 +207,21 @@ export const styles = StyleSheet.create({
   bottomBtns: {
     flexDirection: 'row',
     gap: 8,
-    paddingVertical: 8,
+    padding: 10,
     backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderColor: COLORS.grey200,
+    position: 'absolute',
+    bottom: 0
   },
-
   timePicker: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    height: 100,
-    // backgroundColor: 'blue'
+    backgroundColor: 'rgba(243,243,243,0.75)',
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    borderRadius: 16
   },
   separator: {
     fontSize: 24,
@@ -224,9 +229,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   picker: {
-    // width: '100%',
-    // height: 150,
-    flex: 1
+    flex: 1,
   },
   selectedTime: {
     fontSize: 18,
@@ -252,6 +255,42 @@ export const styles = StyleSheet.create({
     color: COLORS.grey600
   },
 
+  
+  // Medication Details
+  medicationImg: {
+    height: height/10*4,
+    backgroundColor: COLORS.grey400
+  },
+  cameraBtn: {
+    width: 60,
+    height: 60,
+    backgroundColor: COLORS.teal700,
+    borderRadius: 100,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bottom: 12,
+    right: 12
+  },
+  sideEffects: {
+    gap: 8, 
+    marginHorizontal: 16,
+    padding: 12,
+    marginBottom: 32,
+    backgroundColor: COLORS.grey100,
+    borderRadius: 16,
+  },
+  sideEffectChip: {
+    paddingVertical: 6,
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.pink400,
+    paddingHorizontal: 12,
+    borderRadius: 20
+  },
+
   // Orbital
   profileImg: {
     width: 48,
@@ -271,5 +310,6 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     margin: 4
   }
+
 
 });

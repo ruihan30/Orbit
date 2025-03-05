@@ -21,6 +21,7 @@ import Login from './src/screens/authentication/Login';
 import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
 import AlarmDetails from './src/screens/alarmDetails.js';
+import MedicationDetails from './src/screens/medicationDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 
@@ -89,7 +90,7 @@ export default function App() {
     const renderScene = ({ route }) => {
       switch (route.key) {
         case 'home':
-          return <Home />;
+          return <Home onNavigateTo={handleTabChange} />;
         case 'medication':
           return <Medication />;
         case 'orbital':
@@ -101,6 +102,10 @@ export default function App() {
         default:
           return null;
       }
+    };
+
+    const handleTabChange = (newIndex) => {
+      setIndex(newIndex); // Change the index based on the tab you want to navigate to
     };
 
     return (
@@ -156,6 +161,7 @@ export default function App() {
                 <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
                 <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
                 <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
+                <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
               </Stack.Navigator>
             </NavigationContainer>
             <BottomSheetComponent/>

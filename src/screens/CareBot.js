@@ -13,6 +13,7 @@ export default function CareBot() {
   const [userInput, setUserInput] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false); 
+
   //   if (!userInput.trim()) return;  // Don't send empty input
 
   //   setLoading(true);  // Show loading indicator
@@ -40,6 +41,7 @@ export default function CareBot() {
 
   // const cohere = require('cohere-ai');
   // require('dotenv').config(); 
+  
   const cohere = new CohereClientV2({
     token: process.env.COHERE_API_KEY,  // Replace <<apiKey>> with your actual API key
   });

@@ -43,6 +43,7 @@ export const COLORS = {
   pink300: '#F0D8D8',
   pink400: '#E5BCBC',
   pink500: '#DAA4A4',
+  pink550: '#CE8B8B',
   pink600: '#C17272',
   pink700: '#AB5757',
   pink800: '#8F4646',

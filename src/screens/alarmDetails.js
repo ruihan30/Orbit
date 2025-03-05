@@ -34,11 +34,12 @@ export default function AlarmDetails() {
   };
   
   return (
-    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1}}>
+    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingTop: 20, paddingBottom: 62}}>
 
-      <ScrollView style={{paddingHorizontal: 16, overflow: 'visible', flex: 1}}>
+      <ScrollView style={{overflow: 'visible', flex: 1, }}>
 
-        <View style={{gap: 28}}>
+        {/* Details */}
+        <View style={{paddingHorizontal: 16, gap: 28}}>
 
           {/* Header */}
           <View style={styles.timePicker}>
@@ -48,6 +49,7 @@ export default function AlarmDetails() {
               onValueChanged={onHourChange}
               visibleItemCount={3}
               style={styles.picker}
+              itemTextStyle={{fontFamily: 's-semibold', color: COLORS.grey800}}
             />
             <Text style={styles.separator}>:</Text>
             <WheelPicker
@@ -56,6 +58,7 @@ export default function AlarmDetails() {
               onValueChanged={onMinuteChange}
               visibleItemCount={3}
               style={styles.picker}
+              itemTextStyle={{fontFamily: 's-semibold', color: COLORS.grey800}}
             />
           </View>
 
@@ -74,7 +77,7 @@ export default function AlarmDetails() {
                 { value: 'custom', label: 'Custom',  labelStyle: {fontFamily:'bg-regular', fontSize: 14} },
               ]}
               style={{borderColor: COLORS.grey450}}
-              theme={{colors: { onSurface: COLORS.grey600, onSecondaryContainer: COLORS.white, secondaryContainer: COLORS.teal700, outline: COLORS.grey300 }}}
+              theme={{colors: { onSurface: COLORS.grey600, onSecondaryContainer: COLORS.white, secondaryContainer: COLORS.pink550, outline: COLORS.grey300 }}}
             />
             <View style={[styles.flexRow, {width: '100%', justifyContent: 'space-between'}]}>
               <View style={styles.days}><Text style={styles.daysText}>Sun</Text></View>
@@ -104,10 +107,12 @@ export default function AlarmDetails() {
               style={{backgroundColor: COLORS.bg}}
             />
           </View>
+
         </View>
         
         {/* Medication */}
-        <View style={{gap: 16, marginBottom: 16}}>
+        <View style={{paddingHorizontal: 16, gap: 16, marginBottom: 16,}}>
+
           <View style={{gap: 8}}>
             <Text style={{fontFamily: 's-semibold', color: COLORS.grey700, fontSize: 16}}>Medication</Text>
             <Button 
@@ -204,10 +209,13 @@ export default function AlarmDetails() {
             </View>
             
           </View>
-        </View>
 
-        {/* Bottom Buttons */}
-        <View style={styles.bottomBtns}>
+        </View> 
+      
+      </ScrollView>
+
+      {/* Bottom Buttons */}
+      <View style={styles.bottomBtns}>
           <Button 
             size='large' 
             type='outline' 
@@ -221,8 +229,6 @@ export default function AlarmDetails() {
             onPress={() => console.log(selectedHour)}
             customStyle={{flex: 1}}></Button>
         </View>
-      
-      </ScrollView>
 
     </SafeAreaView>
   );
