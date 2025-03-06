@@ -1,24 +1,17 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../colors/colors.js';
 import { TextInput, Menu, Divider } from 'react-native-paper';
 import { CaretDown } from 'phosphor-react-native';
 import { Button } from './button.js';
 
-export const InputField = ({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect }) => {
+export const InputField = forwardRef(({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect, required=true }, ref) => {
   const [visible, setVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
-  const [borderColor, setBorderColor] = useState(COLORS.grey300);
 
-  const openMenu = () => {
-    setVisible(true); 
-    setBorderColor(COLORS.pink600);
-  };
-  const closeMenu = () => {
-    setVisible(false);
-    setBorderColor(COLORS.grey300);
-  };
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
 
   const handleSelect = (value) => {
     setSelectedValue(value);
@@ -27,6 +20,7 @@ export const InputField = ({ placeholder, style, value, dropdown, numeric, data,
   };
 
   const handleChangeText = (text) => {
+    setSelectedValue(text);
     if (onChangeText) onChangeText(text);
   };
 
@@ -37,15 +31,14 @@ export const InputField = ({ placeholder, style, value, dropdown, numeric, data,
       anchor={
         <TextInput
           mode="outlined"
-          placeholder={placeholder}
+          placeholder={required ? `${placeholder} *` : placeholder}
           placeholderTextColor={COLORS.grey400}
           textColor={COLORS.grey900}
-          outlineColor={borderColor}
+          outlineColor={COLORS.grey300}
           outlineStyle={{ borderRadius: 12 }}
           contentStyle={[{ fontFamily: 'bg-medium', fontSize: 16, textOverflow: 'ellipsis'}, style]}
           activeOutlineColor={COLORS.pink500}
-          editable={!dropdown}
-          value={selectedValue || value} // Show selected value
+          value={selectedValue} // Show selected value
           right={
             dropdown ? (
               <TextInput.Icon
@@ -60,6 +53,7 @@ export const InputField = ({ placeholder, style, value, dropdown, numeric, data,
           multiline={multiline ? true : false}
           style={{paddingVertical: multiline? 14 : 0}}
           onChangeText={handleChangeText}
+          ref={ref}
         />
       }
       anchorPosition='bottom'
@@ -78,7 +72,7 @@ export const InputField = ({ placeholder, style, value, dropdown, numeric, data,
       ))}
     </Menu>
   );
-};
+});
 
 const styles = StyleSheet.create({
   menuItem: {

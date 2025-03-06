@@ -290,6 +290,7 @@ export const styles = StyleSheet.create({
     gap: 8, 
     marginHorizontal: 16,
     padding: 12,
+    paddingBottom: 16,
     marginBottom: 32,
     backgroundColor: COLORS.grey100,
     borderRadius: 16,

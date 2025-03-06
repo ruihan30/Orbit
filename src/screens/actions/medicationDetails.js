@@ -1,8 +1,8 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, Keyboard, KeyboardAvoidingView, Alert } from 'react-native';
+import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, Keyboard, KeyboardAvoidingView, Alert, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput, SegmentedButtons, List, TouchableRipple, Menu, Divider, PaperProvider, Modal, Portal } from 'react-native-paper';
+import { TextInput, SegmentedButtons, List, TouchableRipple, Menu, Divider, PaperProvider, Modal, Portal, Snackbar } from 'react-native-paper';
 import { Camera, CalendarDots, X, Plus, Pill } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../colors/colors.js';
@@ -19,27 +19,67 @@ export default function MedicationDetails() {
   const navigation = useNavigation();
   const MEDICINETYPE = ['Tablet(s)/ Capsule(s)', 'Spoon(s)', 'Drop(s)/ Strip(s)', 'Patch(es)' ];
   const MEALTIMES = ['before meal', 'after meal', 'after fasting', 'anytime'];
-  const FREQUENCY = ['daily', 'weekly', 'whenever necessary'];
+  const FREQUENCY = ['daily', 'weekly', 'whenever necessary', 'custom'];
   const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  const firstInputRef = useRef(null);
   const [sideEffect, setSideEffect] = useState(null);
   const [medicationDetails, setMedicationDetails] = useState({
     image: '',
-    name: '',
-    dosage: '',
-    medicineType: '',
-    mealTime: '',
-    frequency: '',
-    details: '',
-    purpose: '',
+    name: '', // required
+    dosage: '', // required
+    medicineType: '', // required
+    mealTime: '', // required
+    frequency: '', // required
+    details: '', // required
+    purpose: '', 
     dosagesLeft: '',
-    expiryDate: '',
+    expiryDate: '', // required 
     sideEffects: [],
   });
   const [medicationFrequency, setMedicationFrequency] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
+  const [calendarPickerVisible, setcalendarPickerVisible] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
   const date = new Date();
+
+  const requiredFields = ["name", "dosage", "medicineType", "mealTime", "frequency", "details", "expiryDate"];
+  const nameRef = useRef(null);
+  const dosageRef = useRef(null);
+  const medicineTypeRef = useRef(null);
+  const mealTimeRef = useRef(null);
+  const frequencyRef = useRef(null);
+  const detailsRef = useRef(null);
+  const expiryDateRef = useRef(null);
+  const inputRefs = {
+    name: nameRef,
+    dosage: dosageRef,
+    medicineType: medicineTypeRef,
+    mealTime: mealTimeRef,
+    frequency: frequencyRef,
+    details: detailsRef,
+    expiryDate: expiryDateRef,
+  };
+
+  const onToggleSnackBar = () => setToastVisible(!toastVisible);
+  const onDismissSnackBar = () => setToastVisible(false);
+
+  const validateInputs = () => {
+    let firstEmptyField = null;
+
+    requiredFields.forEach((key) => {
+      if (!medicationDetails[key] || medicationDetails[key].length === 0) {
+        if (!firstEmptyField) firstEmptyField = key;
+      }
+    });
+
+    // Focus on the first empty field
+    if (firstEmptyField && inputRefs[firstEmptyField]?.current) {
+      inputRefs[firstEmptyField].current.focus();
+      onToggleSnackBar();
+      console.log(toastVisible);
+    } else {
+      console.log("Form submitted:", medicationDetails);
+    }
+  };
   
   const updateMedicationDetails = (field, value, isArray = false, remove = false) => {
     setMedicationDetails((prevDetails) => {
@@ -80,13 +120,13 @@ export default function MedicationDetails() {
     }
   };
 
-  const showPicker = () => setIsVisible(true);
+  const showPicker = () => setcalendarPickerVisible(true);
   const selectDate = (selectedDate) => {
     if(selectedDate) {
       updateMedicationDetails('expiryDate', moment(selectedDate).format("DD/MM/YYYY"));
       console.log(moment(selectedDate).format("DD/MM/YYYY"));
     };
-    setIsVisible(false);
+    setcalendarPickerVisible(false);
   };
 
   const handleInputs = (frequency) => {
@@ -94,20 +134,21 @@ export default function MedicationDetails() {
       case 'daily': setMedicationFrequency(1); break;
       case 'weekly': setMedicationFrequency(2); break;
       case 'whenever necessary': setMedicationFrequency(3); break;
+      case 'custom': setMedicationFrequency(3); break;
       default: setMedicationFrequency(1);
     };
     console.log(medicationFrequency);
   };
 
-  useEffect(() => {
-    if (medicationDetails.name == '') {
-      setTimeout(() => {
-        if (firstInputRef.current) {
-          firstInputRef.current.focus(); // Focus the input and open the keyboard
-        }
-      }, 100);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (medicationDetails.name == '') {
+  //     setTimeout(() => {
+  //       if (nameRef.current) {
+  //         nameRef.current.focus(); // Focus the input and open the keyboard
+  //       }
+  //     }, 100);
+  //   }
+  // }, []);
   
   return (
     <PaperProvider>
@@ -115,8 +156,8 @@ export default function MedicationDetails() {
 
         {/* Calendar picker modal */}
         <Portal>
-          <Modal visible={isVisible} onDismiss={() => setIsVisible(false)}>
-            {isVisible &&
+          <Modal visible={calendarPickerVisible} onDismiss={() => setcalendarPickerVisible(false)}>
+            {calendarPickerVisible &&
               <TimeDatePicker
                 mode={Modes.calendar}
                 date={date}
@@ -161,8 +202,8 @@ export default function MedicationDetails() {
             <TextInput
               value={medicationDetails.name}
               onChangeText={(text) => updateMedicationDetails('name', text)}
-              ref={firstInputRef}
-              placeholder='Medication Name'
+              ref={nameRef}
+              placeholder='Medication Name *'
               mode='flat'
               underlineColor={COLORS.pink800}
               activeUnderlineColor={COLORS.pink500}
@@ -180,6 +221,7 @@ export default function MedicationDetails() {
                   numeric={true} 
                   value={medicationDetails.dosage} 
                   onChangeText={(text) => updateMedicationDetails('dosage', text)}
+                  ref={dosageRef}
                 />
                 <View style={{flex: 1, position: 'relative'}}>
                   <InputField 
@@ -188,6 +230,8 @@ export default function MedicationDetails() {
                     data={MEDICINETYPE}
                     value={medicationDetails.medicineType} 
                     onSelect={(selectedValue) => updateMedicationDetails('medicineType', selectedValue)}
+                    ref={medicineTypeRef}
+                    onChangeText={(text) => updateMedicationDetails('medicineType', text)}
                   />
                 </View>
               </View>
@@ -196,11 +240,12 @@ export default function MedicationDetails() {
                 <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>to be taken/ applied</Text>
                 <View style={{flex: 1}}>
                   <InputField 
-                    placeholder={'before meal'} 
+                    placeholder={'after meal'} 
                     dropdown={true} 
                     data={MEALTIMES}
                     value={medicationDetails.mealTime} 
                     onSelect={(selectedValue) => updateMedicationDetails('mealTime', selectedValue)}
+                    ref={mealTimeRef}
                   />
                 </View>
               </View>
@@ -212,6 +257,7 @@ export default function MedicationDetails() {
                   data={FREQUENCY}
                   value={medicationDetails.frequency} 
                   onSelect={(selectedValue) => {updateMedicationDetails('frequency', selectedValue); handleInputs(selectedValue);}}
+                  ref={frequencyRef}
                 />
               </View>
 
@@ -224,6 +270,7 @@ export default function MedicationDetails() {
                     data={MEALTIMES}
                     value={medicationDetails.details} 
                     onChangeText={(text) => updateMedicationDetails('details', text)}
+                    ref={detailsRef}
                   />
                 </View>
                 <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>hours</Text>
@@ -238,6 +285,7 @@ export default function MedicationDetails() {
                     data={WEEK}
                     value={medicationDetails.details} 
                     onSelect={(selectedValue) => updateMedicationDetails('details', selectedValue)}
+                    ref={detailsRef}
                   />
                 </View>
               </View>}
@@ -248,6 +296,7 @@ export default function MedicationDetails() {
                   multiline={true}
                   value={medicationDetails.details} 
                   onChangeText={(text) => updateMedicationDetails('details', text)}
+                  ref={detailsRef}
                 />
               </View>}
 
@@ -263,6 +312,7 @@ export default function MedicationDetails() {
               multiline={true}
               value={medicationDetails.purpose} 
               onChangeText={(text) => updateMedicationDetails('purpose', text)}
+              required={false}
             />
           </View>
 
@@ -275,6 +325,7 @@ export default function MedicationDetails() {
                 numeric={true}
                 value={medicationDetails.dosagesLeft} 
                 onChangeText={(text) => updateMedicationDetails('dosagesLeft', text)}
+                required={false}
               />
             </View> 
 
@@ -292,6 +343,7 @@ export default function MedicationDetails() {
                 value={medicationDetails.expiryDate}
                 right={<TextInput.Icon icon={() => <CalendarDots color={COLORS.grey900} size={20}/>} onPress={showPicker}/>}
                 editable={false}
+                ref={expiryDateRef}
               />
             </View> 
           </View>
@@ -340,6 +392,21 @@ export default function MedicationDetails() {
         
         </ScrollView>
 
+        {/* Toast */}
+        <Snackbar
+          visible={toastVisible}
+          onDismiss={onDismissSnackBar}
+          duration={5000}
+          onIconPress={() => setToastVisible(false)}
+          icon={() => <X size={20} color={COLORS.white} weight='bold' />}
+          style={[styles.snackbar, {backgroundColor: COLORS.error, position: 'absolute', bottom: 66, zIndex: 2}]}
+          wrapperStyle={{width: Dimensions.get("window").width}}
+        >
+          <Text style={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.white}}>
+            Please fill in the required fields.
+          </Text>
+        </Snackbar>
+
         {/* Bottom Buttons */}
         <View style={styles.bottomBtns}>
           <Button 
@@ -352,7 +419,7 @@ export default function MedicationDetails() {
             size='large' 
             type='fill' 
             label='Save' 
-            onPress={() => console.log(selectedHour)}
+            onPress={validateInputs}
             customStyle={{flex: 1}}></Button>
         </View>
 
