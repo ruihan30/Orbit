@@ -257,20 +257,34 @@ export const styles = StyleSheet.create({
 
   
   // Medication Details
+  medicationImgWrapper: {
+    height: height/10*5,
+    backgroundColor: COLORS.grey200,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   medicationImg: {
-    height: height/10*4,
-    backgroundColor: COLORS.grey400
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
   },
   cameraBtn: {
-    width: 60,
-    height: 60,
-    backgroundColor: COLORS.teal700,
+    width: 58,
+    height: 58,
+    backgroundColor: COLORS.teal100,
     borderRadius: 100,
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
     bottom: 12,
-    right: 12
+    right: 12,
+    elevation: 5
+  },
+  calendarPicker: {
+    zIndex: 2,
+    borderRadius: 16,
+    elevation: 5,
+
   },
   sideEffects: {
     gap: 8, 

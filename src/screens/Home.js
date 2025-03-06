@@ -140,9 +140,10 @@ export default function Home({ onNavigateTo }) {
           />
         </Appbar.Header>
 
-        <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
-        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
+        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
+        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button> */}
         <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
+        <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user)}></Button>
         
         <ScrollView 
           stickyHeaderIndices={[1]}

@@ -4,10 +4,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, SegmentedButtons, List, TouchableRipple } from 'react-native-paper';
 import { CaretRight, Plus, DotsThreeOutlineVertical, TrashSimple } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { COLORS } from '../colors/colors.js';
-import { styles } from '../styles/styles.js';
-import { Button } from '../components/button.js';
-import { Chip } from '../components/chip.js';
+import { COLORS } from '../../colors/colors.js';
+import { styles } from '../../styles/styles.js';
+import { Button } from '../../components/button.js';
+import { Chip } from '../../components/chip.js';
 import WheelPicker from '@quidone/react-native-wheel-picker';
 
 export default function AlarmDetails() {

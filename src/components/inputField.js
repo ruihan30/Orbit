@@ -6,7 +6,7 @@ import { TextInput, Menu, Divider } from 'react-native-paper';
 import { CaretDown } from 'phosphor-react-native';
 import { Button } from './button.js';
 
-export const InputField = ({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText }) => {
+export const InputField = ({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect }) => {
   const [visible, setVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
   const [borderColor, setBorderColor] = useState(COLORS.grey300);
@@ -23,12 +23,11 @@ export const InputField = ({ placeholder, style, value, dropdown, numeric, data,
   const handleSelect = (value) => {
     setSelectedValue(value);
     closeMenu();
+    if (onSelect) onSelect(value);
   };
 
   const handleChangeText = (text) => {
-    if (onChangeText) {
-      onChangeText(text);
-    }
+    if (onChangeText) onChangeText(text);
   };
 
   return (

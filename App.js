@@ -20,8 +20,8 @@ import CareBot from './src/screens/CareBot.js';
 import Login from './src/screens/authentication/Login';
 import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
-import AlarmDetails from './src/screens/alarmDetails.js';
-import MedicationDetails from './src/screens/medicationDetails.js';
+import AlarmDetails from './src/screens/actions/alarmDetails.js';
+import MedicationDetails from './src/screens/actions/medicationDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 
@@ -96,7 +96,7 @@ export default function App() {
         case 'orbital':
           return <Orbital />;
         case 'carebot':
-            return <CareBot />;
+          return <CareBot />;
         // case 'add':
         //     return <Login />;
         default:
