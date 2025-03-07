@@ -18,7 +18,7 @@ import { useBottomSheet } from '../components/bottomSheet.js';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { db } from '../utilities/firebaseConfig.js';
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, getDoc, doc } from "firebase/firestore";
 
 export default function Home({ onNavigateTo }) {
   const navigation = useNavigation();
@@ -84,7 +84,10 @@ export default function Home({ onNavigateTo }) {
       console.log('User logged out');
       useAuthStore.getState().logout();
       console.log(isAuthenticated, user);
-      navigation.navigate('Landing');
+      
+      if (navigation.isFocused()) {
+        navigation.navigate('Landing');
+      }
     });
   };
 
@@ -95,10 +98,10 @@ export default function Home({ onNavigateTo }) {
   const addUser = async () => {
     try {
       const docRef = await addDoc(collection(db, "user"), {
-        name: "Tan Xiao Ming",
-        email: "xiaoming@example.com",
-        age: 25,
-        createdAt: new Date(),
+        // name: user.name, 
+        uid: user.uid,
+        email: user.email,
+        createdAt: user.createdAt,
       });
   
       console.log("Document written with ID: ", docRef.id);
@@ -108,10 +111,26 @@ export default function Home({ onNavigateTo }) {
   };
 
   async function fetchData() {
-    const querySnapshot = await getDocs(collection(db, "user"));
-    querySnapshot.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
-    });
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (!user) {
+      console.error("No authenticated user.");
+      return;
+    }
+  
+    try {
+      const userDocRef = doc(db, "user", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+  
+      if (userDocSnap.exists()) {
+        console.log("User Data:", userDocSnap.data());
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.error("Error fetching user document:", error);
+    }
   }
 
   return (
@@ -140,10 +159,11 @@ export default function Home({ onNavigateTo }) {
           />
         </Appbar.Header>
 
-        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button>
-        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button> */}
+        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button> */}
+        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
         <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
-        <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user)}></Button>
+        <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user.uid)}></Button>
+        <Button size='small' type='fill' label='Test logout' onPress={() => handleLogout()}></Button>
         
         <ScrollView 
           stickyHeaderIndices={[1]}

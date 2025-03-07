@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, forwardRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Keyboard } from 'react-native';
 import { COLORS } from '../colors/colors.js';
 import { TextInput, Menu, Divider } from 'react-native-paper';
 import { CaretDown } from 'phosphor-react-native';
@@ -10,7 +10,10 @@ export const InputField = forwardRef(({ placeholder, style, value, dropdown, num
   const [visible, setVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
 
-  const openMenu = () => setVisible(true);
+  const openMenu = () => {
+    setVisible(true);
+    Keyboard.dismiss();
+  };
   const closeMenu = () => setVisible(false);
 
   const handleSelect = (value) => {
@@ -38,7 +41,7 @@ export const InputField = forwardRef(({ placeholder, style, value, dropdown, num
           outlineStyle={{ borderRadius: 12 }}
           contentStyle={[{ fontFamily: 'bg-medium', fontSize: 16, textOverflow: 'ellipsis'}, style]}
           activeOutlineColor={COLORS.pink500}
-          value={selectedValue} // Show selected value
+          value={selectedValue || value} // Show selected value
           right={
             dropdown ? (
               <TextInput.Icon

@@ -14,13 +14,22 @@ import { InputField } from '../../components/inputField.js';
 import * as ImagePicker from 'expo-image-picker';
 import { TimeDatePicker, Modes } from 'react-native-time-date-picker';
 import moment from 'moment';
+import useAuthStore from '../../store/useAuthStore.js';
+import { getFirestore, collection, doc, setDoc, serverTimestamp, getDocs, getDoc } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
+import { db } from '../../utilities/firebaseConfig.js';
 
-export default function MedicationDetails() {
+export default function MedicationDetails({ route }) {
   const navigation = useNavigation();
+  const user = useAuthStore((state) => state.user);
+  const { medication } = route.params || {};
   const MEDICINETYPE = ['Tablet(s)/ Capsule(s)', 'Spoon(s)', 'Drop(s)/ Strip(s)', 'Patch(es)' ];
   const MEALTIMES = ['before meal', 'after meal', 'after fasting', 'anytime'];
   const FREQUENCY = ['daily', 'weekly', 'whenever necessary', 'custom'];
   const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  const userDocRef = doc(db, "user", user.uid);
+  const medicationRef = collection(userDocRef, "medications");
 
   const [sideEffect, setSideEffect] = useState(null);
   const [medicationDetails, setMedicationDetails] = useState({
@@ -35,10 +44,13 @@ export default function MedicationDetails() {
     dosagesLeft: '',
     expiryDate: '', // required 
     sideEffects: [],
+    alarmSet: false,  
   });
   const [medicationFrequency, setMedicationFrequency] = useState(0);
   const [calendarPickerVisible, setcalendarPickerVisible] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [saveVisible, setSaveVisible] = useState(false);
+  const [discardVisible, setDiscardVisible] = useState(false);
   const date = new Date();
 
   const requiredFields = ["name", "dosage", "medicineType", "mealTime", "frequency", "details", "expiryDate"];
@@ -64,23 +76,74 @@ export default function MedicationDetails() {
 
   const validateInputs = () => {
     let firstEmptyField = null;
-
+  
     requiredFields.forEach((key) => {
       if (!medicationDetails[key] || medicationDetails[key].length === 0) {
         if (!firstEmptyField) firstEmptyField = key;
       }
     });
-
-    // Focus on the first empty field
+  
     if (firstEmptyField && inputRefs[firstEmptyField]?.current) {
       inputRefs[firstEmptyField].current.focus();
       onToggleSnackBar();
-      console.log(toastVisible);
-    } else {
-      console.log("Form submitted:", medicationDetails);
+      return false; // Validation failed
     }
+    
+    setSaveVisible(true);
+    return true; // Validation passed
   };
   
+  const saveMedicationDetails = async () => {
+    try {
+      if (medication.id) {
+        const medicationDocRef = doc(medicationRef, medication.id);
+        
+        await setDoc(
+          medicationDocRef,
+          {
+            image: medicationDetails.image,
+            name: medicationDetails.name,
+            dosage: medicationDetails.dosage,
+            medicineType: medicationDetails.medicineType,
+            mealTime: medicationDetails.mealTime,
+            frequency: medicationDetails.frequency,
+            details: medicationDetails.details,
+            purpose: medicationDetails.purpose,
+            dosagesLeft: medicationDetails.dosagesLeft,
+            expiryDate: medicationDetails.expiryDate,
+            sideEffects: medicationDetails.sideEffects,
+            updatedAt: serverTimestamp(), // Add an updated timestamp
+          },
+          { merge: true } // Merge the new data with the existing document (without overwriting the entire document)
+        );
+        console.log("Medication details updated successfully!");
+      } else {
+        await setDoc(doc(medicationRef), {
+          image: medicationDetails.image,
+          name: medicationDetails.name,
+          dosage: medicationDetails.dosage,
+          medicineType: medicationDetails.medicineType,
+          mealTime: medicationDetails.mealTime,
+          frequency: medicationDetails.frequency,
+          details: medicationDetails.details,
+          purpose: medicationDetails.purpose,
+          dosagesLeft: medicationDetails.dosagesLeft,
+          expiryDate: medicationDetails.expiryDate,
+          sideEffects: medicationDetails.sideEffects,
+          createdAt: serverTimestamp(),
+        });
+    
+        console.log("Medication details saved successfully!");
+      }
+      
+    } catch (error) {
+      console.error("Error saving medication details: ", error);
+    }
+  
+    console.log("Form submitted:", medicationDetails);
+    navigation.goBack();
+  };
+
   const updateMedicationDetails = (field, value, isArray = false, remove = false) => {
     setMedicationDetails((prevDetails) => {
       if (isArray) {
@@ -140,22 +203,36 @@ export default function MedicationDetails() {
     console.log(medicationFrequency);
   };
 
-  // useEffect(() => {
-  //   if (medicationDetails.name == '') {
-  //     setTimeout(() => {
-  //       if (nameRef.current) {
-  //         nameRef.current.focus(); // Focus the input and open the keyboard
-  //       }
-  //     }, 100);
-  //   }
-  // }, []);
+  const goBack = () => {
+    navigation.goBack();
+  };
+
+  useEffect(() => {
+    if (medication) {
+      setMedicationDetails({
+        image: medication.image || '',
+        name: medication.name || '',
+        dosage: medication.dosage || '',
+        medicineType: medication.medicineType || '',
+        mealTime: medication.mealTime || '',
+        frequency: medication.frequency || '',
+        details: medication.details || '',
+        purpose: medication.purpose || '',
+        dosagesLeft: medication.dosagesLeft || '',
+        expiryDate: medication.expiryDate || '',
+        sideEffects: medication.sideEffects || [],
+        alarmSet: medication.alarmSet || false, 
+      });
+    }
+  }, []);
   
   return (
     <PaperProvider>
       <View style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
 
-        {/* Calendar picker modal */}
+        {/* Modals */}
         <Portal>
+          
           <Modal visible={calendarPickerVisible} onDismiss={() => setcalendarPickerVisible(false)}>
             {calendarPickerVisible &&
               <TimeDatePicker
@@ -181,10 +258,39 @@ export default function MedicationDetails() {
               />
             }
           </Modal>
+
+          <Modal visible={saveVisible} onDismiss={() => setSaveVisible(false)}>
+            <View style={styles.modalWrapper}>
+              <View style={{paddingBottom: 32, gap: 16, paddingTop: 8}}>
+                <Text style={{fontFamily: 's-semibold', fontSize: 20, textAlign: 'center', color: COLORS.grey800}}>Save Medication Details?</Text>
+                <Text style={{fontFamily: 'bg-regular', fontSize: 16, textAlign: 'center', color: COLORS.grey500}}>Almost done!{'\n'}Are you sure you want to save these details? Double-check everything before saving.</Text>
+              </View>
+
+              <View style={[styles.flexRow, {gap: 4}]}>
+                <Button size='small' type='outline' label='Go Back' onPress={() => setSaveVisible(false)} customStyle={{flex: 1}}></Button>
+                <Button size='small' type='fill' label='Save Changes' onPress={saveMedicationDetails} customStyle={{flex: 1}}></Button>
+              </View>
+            </View>
+          </Modal>
+
+          <Modal visible={discardVisible} onDismiss={() => setDiscardVisible(false)}>
+            <View style={styles.modalWrapper}>
+              <View style={{paddingBottom: 32, gap: 16, paddingTop: 8}}>
+                <Text style={{fontFamily: 's-semibold', fontSize: 20, textAlign: 'center', color: COLORS.grey800}}>Discard Changes?</Text>
+                <Text style={{fontFamily: 'bg-regular', fontSize: 16, textAlign: 'center', color: COLORS.grey500}}>You have unsaved changes.{'\n'}Are you sure you want to leave without saving? Any edits will be lost.</Text>
+              </View>
+
+              <View style={[styles.flexRow, {gap: 4}]}>
+                <Button size='small' type='outline' label='Keep Editing' onPress={() => setDiscardVisible(false)} customStyle={{flex: 1}}></Button>
+                <Button size='small' type='fill' label='Discard Changes' onPress={goBack} customStyle={{flex: 1}} fillColor={COLORS.error}></Button>
+              </View>
+            </View>
+          </Modal>
+
         </Portal>
-
+        
         <ScrollView style={{overflow: 'visible', flex: 1, position: 'relative'}} keyboardShouldPersistTaps="handled">
-
+          
           {/* Medication Image */}
           <View style={styles.medicationImgWrapper}>
             {
@@ -198,6 +304,7 @@ export default function MedicationDetails() {
           
           {/* Input Fields */}
           <View style={{paddingHorizontal: 16, gap: 12, marginBottom: 32, paddingTop: 8}}>
+            {/* <Button size='small' type='fill' label='Test auth store' onPress={test}></Button> */}
 
             <TextInput
               value={medicationDetails.name}
@@ -382,7 +489,12 @@ export default function MedicationDetails() {
               />
               <Pressable
                 style={{padding: 12, borderRadius: 100, backgroundColor: COLORS.pink500}}
-                onPress={() => {if(sideEffect) updateMedicationDetails('sideEffects', sideEffect, true, false);}}
+                onPress={() => {
+                  if(sideEffect) {
+                    updateMedicationDetails('sideEffects', sideEffect, true, false);
+                    setSideEffect('')
+                  };
+                }}
               >
                 <Plus size={18} color={COLORS.white} />
               </Pressable>
@@ -413,7 +525,7 @@ export default function MedicationDetails() {
             size='large' 
             type='outline' 
             label='Cancel' 
-            onPress={() => console.log('cancel')}
+            onPress={() => setDiscardVisible(true)}
             customStyle={{flex: 1}}></Button>
           <Button 
             size='large' 

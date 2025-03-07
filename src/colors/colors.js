@@ -50,10 +50,12 @@ export const COLORS = {
   pink900: '#773D3D',
 
   // general
-  bg: '#F3F3F3',
+  bg: '#F1F1F1',
   white: '#FFFFFF',
   error: '#c44545', 
+  errorFaded: 'rgba(217,108,108,0.15)',
   success: '#82B87C', 
+  successFaded: 'rgba(130,180,124,0.15)',
   warning: '#F4D06F',
 
   // rainbow

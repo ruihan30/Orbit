@@ -55,7 +55,6 @@ export default function Signup() {
     }
   };
 
-
   const handleSignUp = () => {
     const auth = getAuth(app);
 

@@ -239,20 +239,25 @@ export const styles = StyleSheet.create({
   // Medication
   medicationGrid:{
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
   },
   medicationRipple: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
     padding: 8,
     alignSelf: 'start',
-    width: (width/2)-16,
-    marginTop: 8
+    width: (width/2)-12,
+    marginTop: 8,
+  },
+  medicationHeader: {
+    fontFamily: 's-semibold',
+    fontSize: 12,
   },
   medicationText: {
-    fontFamily: 'bg-medium',
+    fontFamily: 'bg-regular',
     fontSize: 14,
-    color: COLORS.grey600
+    color: COLORS.grey700
   },
 
   
@@ -284,7 +289,6 @@ export const styles = StyleSheet.create({
     zIndex: 2,
     borderRadius: 16,
     elevation: 5,
-
   },
   sideEffects: {
     gap: 8, 
@@ -304,6 +308,14 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.pink400,
     paddingHorizontal: 12,
     borderRadius: 20
+  },
+  modalWrapper: {
+    width: width/10*9,
+    backgroundColor: COLORS.white,
+    alignSelf: 'center',
+    borderRadius: 28,
+    padding: 20,
+    
   },
 
   // Orbital

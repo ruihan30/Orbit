@@ -13,6 +13,8 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 // import { GoogleSignin } from '@react-native-google-signin/google-signin'; 
 import useAuthStore from '../../store/useAuthStore.js';
 import app from '../../utilities/firebaseConfig.js';
+import { db } from '../../utilities/firebaseConfig.js';
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -66,30 +68,34 @@ export default function Login() {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const auth = getAuth(app);
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Login successful
-        const user = userCredential.user;
-
-        user.getIdToken()
-          .then((idToken) =>{
-            console.log('Logged in as:', user.email);
-            console.log('ID Token:', idToken);
-            login(user, idToken);
-            navigation.navigate('NavBar'); 
-          })
-          .catch((error) => {
-            console.error('Error fetching token:', tokenError.message);
-          });
-      })
-      .catch((error) => {
-        const errorMessage = getErrorMessage(error.code);
-        setError(errorMessage);
-        onToggleSnackBar()
-        console.log(error.message);
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      const idToken = await user.getIdToken();
+      // console.log('Logged in as:', user.email);
+      // console.log('ID Token:', idToken);
+      
+      login(user, idToken);
+  
+      const userDocRef = doc(db, "user", user.uid);
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        createdAt: serverTimestamp(), 
       });
+  
+      navigation.navigate('NavBar'); 
+  
+    } catch (error) {
+      const errorMessage = getErrorMessage(error.code);
+      setError(errorMessage);
+      onToggleSnackBar();
+      console.log(error.message);
+    }
   };
 
   const handleGoogleLogin = async () => {
