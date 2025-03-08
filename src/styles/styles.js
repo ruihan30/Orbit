@@ -132,18 +132,29 @@ export const styles = StyleSheet.create({
   alarmItem: {
     backgroundColor: COLORS.white, 
     paddingHorizontal: 12,
-    paddingBottom: 14,
-    paddingTop: 4,
-    // borderWidth: 0.5,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderColor: COLORS.grey300,
-    borderRadius: 28,
+    borderRadius: 24,
     marginBottom: 8,
-    gap: 4,
+    gap: 8,
+    elevation: 1
+  },
+  numberOfMeds: {
+    backgroundColor: COLORS.pink100,
+    width: 40,
+    height: 30,
+    borderWidth: 1,
+    borderColor: COLORS.pink500,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 2
   },
   alarmMedicationRipple: {
-    backgroundColor: COLORS.pink150,
+    backgroundColor: COLORS.pink100,
     borderWidth: 1.5,
-    borderColor: COLORS.pink400,
+    borderColor: COLORS.pink300,
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden'
@@ -164,7 +175,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Add/edit alarm
+  // Alarm Details
   days: {
     height: 44,
     width: 44,
@@ -178,7 +189,7 @@ export const styles = StyleSheet.create({
     fontFamily: 's-regular',
     fontSize: 12,
     lineHeight: 16,
-    color: COLORS.grey600
+    color: COLORS.grey700
   },
   daysActive: {
     height: 44,
@@ -195,14 +206,17 @@ export const styles = StyleSheet.create({
     color: COLORS.white
   },
   deleteSm: {
-    backgroundColor: COLORS.pink200,
-    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    zIndex: 2,
+    backgroundColor: COLORS.pink100,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.error
+    padding: 2,
+    borderWidth: 0.5,
+    borderColor: COLORS.pink400
   },
   bottomBtns: {
     flexDirection: 'row',
@@ -218,10 +232,11 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: 'rgba(243,243,243,0.75)',
+    backgroundColor: '#F6F6F6',
     paddingVertical: 20,
     paddingHorizontal: 12,
-    borderRadius: 16
+    borderRadius: 16,
+    gap: 12
   },
   separator: {
     fontSize: 24,
@@ -234,6 +249,16 @@ export const styles = StyleSheet.create({
   selectedTime: {
     fontSize: 18,
     marginTop: 20,
+  },
+  checkbox: {
+    position: 'absolute', 
+    zIndex: 4, 
+    right: 0,
+    backgroundColor: COLORS.grey100, 
+    borderRadius: 8,
+  },
+  imgWrapper: {
+
   },
 
   // Medication
@@ -336,7 +361,21 @@ export const styles = StyleSheet.create({
     gap: 20,
     borderRadius: 16,
     margin: 4
-  }
+  },
+
+  handleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  handle: {
+    width: 30,
+    height: 4,
+    backgroundColor: COLORS.grey400,
+    borderRadius: 4,
+  },
 
 
 });

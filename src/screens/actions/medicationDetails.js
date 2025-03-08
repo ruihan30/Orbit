@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, Keyboard, KeyboardAvoidingView, Alert, Dimensions } from 'react-native';
+import { Image, View, Text, StyleSheet, Pressable, ScrollView, Alert, Dimensions, BackHandler } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, SegmentedButtons, List, TouchableRipple, Menu, Divider, PaperProvider, Modal, Portal, Snackbar } from 'react-native-paper';
 import { Camera, CalendarDots, X, Plus, Pill } from 'phosphor-react-native';
@@ -95,7 +95,7 @@ export default function MedicationDetails({ route }) {
   
   const saveMedicationDetails = async () => {
     try {
-      if (medication.id) {
+      if (medication && medication.id) {
         const medicationDocRef = doc(medicationRef, medication.id);
         
         await setDoc(
@@ -223,7 +223,15 @@ export default function MedicationDetails({ route }) {
         sideEffects: medication.sideEffects || [],
         alarmSet: medication.alarmSet || false, 
       });
-    }
+    };
+
+    const handleBackPress = () => {
+      setDiscardVisible(true); 
+      return true; 
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => backHandler.remove();
   }, []);
   
   return (
@@ -368,44 +376,47 @@ export default function MedicationDetails({ route }) {
                 />
               </View>
 
-              {medicationFrequency === 1 && <View style={[styles.flexRow, {gap: 12}]}>
-                <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>every</Text>
-                <View style={{flex: 1}}>
+              {((medicationDetails.frequency === 'daily') || (medicationFrequency === 1)) && 
+                <View style={[styles.flexRow, {gap: 12}]}>
+                  <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>every</Text>
+                  <View style={{flex: 1}}>
+                    <InputField 
+                      placeholder={'2'} 
+                      numeric={true} 
+                      data={MEALTIMES}
+                      value={medicationDetails.details} 
+                      onChangeText={(text) => updateMedicationDetails('details', text)}
+                      ref={detailsRef}
+                    />
+                  </View>
+                  <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>hours</Text>
+                </View>}
+
+              {((medicationDetails.frequency === 'weekly') || (medicationFrequency === 2)) && 
+                <View style={[styles.flexRow, {gap: 12}]}>
+                  <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>every</Text>
+                  <View style={{flex: 1}}>
+                    <InputField 
+                      placeholder={'Monday'} 
+                      dropdown={true} 
+                      data={WEEK}
+                      value={medicationDetails.details} 
+                      onSelect={(selectedValue) => updateMedicationDetails('details', selectedValue)}
+                      ref={detailsRef}
+                    />
+                  </View>
+                </View>}
+
+              {(((medicationDetails.frequency !== 'daily') && (medicationDetails.frequency !== 'weekly')) || (medicationFrequency === 3)) && 
+                <View>
                   <InputField 
-                    placeholder={'2'} 
-                    numeric={true} 
-                    data={MEALTIMES}
+                    placeholder={'When should this medication be taken? Enter any specific instructions here. e.g. every 3 days'} 
+                    multiline={true}
                     value={medicationDetails.details} 
                     onChangeText={(text) => updateMedicationDetails('details', text)}
                     ref={detailsRef}
                   />
-                </View>
-                <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>hours</Text>
-              </View>}
-
-              {medicationFrequency === 2 && <View style={[styles.flexRow, {gap: 12}]}>
-                <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>every</Text>
-                <View style={{flex: 1}}>
-                  <InputField 
-                    placeholder={'Monday'} 
-                    dropdown={true} 
-                    data={WEEK}
-                    value={medicationDetails.details} 
-                    onSelect={(selectedValue) => updateMedicationDetails('details', selectedValue)}
-                    ref={detailsRef}
-                  />
-                </View>
-              </View>}
-
-              {medicationFrequency === 3 && <View>
-                <InputField 
-                  placeholder={'When should this medication be taken? Enter any specific instructions here. e.g. every 3 days'} 
-                  multiline={true}
-                  value={medicationDetails.details} 
-                  onChangeText={(text) => updateMedicationDetails('details', text)}
-                  ref={detailsRef}
-                />
-              </View>}
+                </View>}
 
             </View>
 

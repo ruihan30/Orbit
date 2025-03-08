@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import useAuthStore from '../store/useAuthStore.js';
-import { getFirestore, collection, doc, setDoc, serverTimestamp, getDocs, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
 import { useFocusEffect } from '@react-navigation/native'; 
@@ -39,7 +39,7 @@ export default function Medication() {
         ...doc.data(),
       }));
 
-      console.log("Medications:", medicationsList);
+      // console.log("Medications:", medicationsList);
       setMedications(medicationsList);
     } catch (error) {
       console.error("Error fetching medications:", error);

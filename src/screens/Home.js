@@ -91,9 +91,7 @@ export default function Home({ onNavigateTo }) {
     });
   };
 
-  const bottomSheetRef = useBottomSheet();
-  const openBottomSheet = () => bottomSheetRef.current.expand()
-  const closeBottomSheet = () => bottomSheetRef.current.close()
+  const { openBottomSheet, closeBottomSheet } = useBottomSheet();
 
   const addUser = async () => {
     try {
@@ -159,12 +157,17 @@ export default function Home({ onNavigateTo }) {
           />
         </Appbar.Header>
 
-        {/* <Button size='small' type='fill' label='Test bottom sheet' onPress={openBottomSheet}></Button> */}
-        <Button size='small' type='fill' label='Test database' onPress={fetchData}></Button>
-        <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
+        <Button size='small' type='fill' label='Test bottom sheet' onPress={() => openBottomSheet(
+            <View>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>Medication Details</Text>
+              <Text>Paracetamol - 500mg</Text>
+            </View>
+          )}></Button>
+        {/* <Button size='small' type='fill' label='Test database' onPress={() => console.log(openBottomSheet)}></Button> */}
+        {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
         <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user.uid)}></Button>
         <Button size='small' type='fill' label='Test logout' onPress={() => handleLogout()}></Button>
-        
+         */}
         <ScrollView 
           stickyHeaderIndices={[1]}
           showsVerticalScrollIndicator={false}
@@ -228,24 +231,32 @@ export default function Home({ onNavigateTo }) {
 
             {/* Pressable alarm, based on time */}
             <Pressable style={styles.alarmItem}>
-              <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingHorizontal: 8}]}>
+              <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingLeft: 12}]}>
+                <View style={[styles.flexRow, {gap: 12, alignItems: 'center'}]}>
+                  <Text style={{fontFamily: 's-semibold', fontSize: 28, color: COLORS.grey800, textAlign: 'center'}}>
+                    10.30 am
+                  </Text>
+                  <View style={styles.numberOfMeds}>
+                    <Text style={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.pink700}}>3</Text>
+                  </View>
+                </View>
                 <Switch></Switch>
-                <Text style={{fontFamily: 's-semibold', fontSize: 24, color: COLORS.grey800, textAlign: 'center'}}>10.30 am</Text>
-                <Minus size={28} color={COLORS.grey500} weight='regular' />
               </View>
+
+              <Button size='small' type='outline' label='Show More' onPress={() => handleLogout()}></Button>
               
               <View style={{gap: 16}}>
                 <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
                   <TouchableRipple 
                     style={styles.alarmMedicationRipple} 
                     rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('MedicationDetails')}
+                    onPress={() => navigation.navigate('AlarmDetails')}
                     borderless={true}
                   >
                     <View style={styles.alarmMedication}>
                       <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 16,}}></View>
                       <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
-                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800, width: '100%'}} numberOfLines={1}>
+                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.pink700, width: '100%'}} numberOfLines={1}>
                           Paracetamol
                         </Text>
                         <View style={{justifyContent: 'flex-end', flex: 1}}>

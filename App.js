@@ -164,7 +164,7 @@ export default function App() {
                 <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
               </Stack.Navigator>
             </NavigationContainer>
-            <BottomSheetComponent/>
+            {/* <BottomSheetComponent/> */}
           </BottomSheetProvider>
         </GestureHandlerRootView>
       </AuthProvider>
@@ -172,27 +172,27 @@ export default function App() {
   );
 }
 
-const BottomSheetComponent = () => {
-  const bottomSheetRef = useBottomSheet();
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
+// const BottomSheetComponent = () => {
+//   const bottomSheetRef = useBottomSheet();
+//   const handleSheetChanges = useCallback((index: number) => {
+//     console.log('handleSheetChanges', index);
+//   }, []);
 
-  return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={['10%', '85%']}
-      enablePanDownToClose={true}
-      onChange={handleSheetChanges}
-      style={{zIndex: 100}}
-    >
-      <BottomSheetView>
-      <Text style={{fontSize: 40}}>Hello from Bottom Sheet! Hello from Bottom Sheet!</Text>
-      </BottomSheetView>
-    </BottomSheet>
-  );
-};
+//   return (
+//     <BottomSheet
+//       ref={bottomSheetRef}
+//       index={-1}
+//       snapPoints={['10%', '85%']}
+//       enablePanDownToClose={true}
+//       onChange={handleSheetChanges}
+//       style={{zIndex: 100}}
+//     >
+//       <BottomSheetView>
+//         <Text style={{fontSize: 40}}>Hello from Bottom Sheet! Hello from Bottom Sheet!</Text>
+//       </BottomSheetView>
+//     </BottomSheet>
+//   );
+// };
 
 const styles = StyleSheet.create({
   container: {

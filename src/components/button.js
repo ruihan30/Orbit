@@ -8,7 +8,7 @@ export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(0
   const sizeStyles = {
     small: {
       paddingVertical: 10, 
-      fontSize: 12,
+      fontSize: 13,
       borderRadius: 24,
       overflow: 'hidden'
     },
@@ -24,7 +24,7 @@ export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(0
     }, 
     outline: {
       borderWidth: 1,
-      borderColor: COLORS.grey400,
+      borderColor: COLORS.grey350,
       color: COLORS.grey900
     }
   };
@@ -52,10 +52,10 @@ export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(0
       <View style={styles.wrapper}>
         {icon}
         <Text style={{
-            fontFamily: 's-regular', 
+            fontFamily: 'bg-regular', 
             color: typeStyle.color, 
             fontSize: sizeStyle.fontSize,
-            marginBottom: 2
+            // marginBottom: 2
           }}
         >{label}</Text>
       </View>
