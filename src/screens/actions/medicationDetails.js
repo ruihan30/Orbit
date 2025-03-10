@@ -16,6 +16,7 @@ import { TimeDatePicker, Modes } from 'react-native-time-date-picker';
 import moment from 'moment';
 import useAuthStore from '../../store/useAuthStore.js';
 import { getFirestore, collection, doc, setDoc, serverTimestamp, getDocs, getDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth } from 'firebase/auth';
 import { db } from '../../utilities/firebaseConfig.js';
 
@@ -23,6 +24,7 @@ export default function MedicationDetails({ route }) {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
   const { medication } = route.params || {};
+  
   const MEDICINETYPE = ['Tablet(s)/ Capsule(s)', 'Spoon(s)', 'Drop(s)/ Strip(s)', 'Patch(es)' ];
   const MEALTIMES = ['before meal', 'after meal', 'after fasting', 'anytime'];
   const FREQUENCY = ['daily', 'weekly', 'whenever necessary', 'custom'];
@@ -162,7 +164,6 @@ export default function MedicationDetails({ route }) {
         return { ...prevDetails, [field]: value };
       }
     });
-    // console.log(value);
   };
 
   const pickImage = async () => {
@@ -179,8 +180,56 @@ export default function MedicationDetails({ route }) {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const photo = result.assets[0];
+      // uploadImage(photo.uri);
       updateMedicationDetails('image', photo.uri);
     }
+  };
+
+  const uploadImage = async (imageUri) => {
+    try {
+      console.log("Uploading image with URI:", imageUri);
+      const blob = await uriToBlob(imageUri);
+      console.log("Blob created:", blob);
+      const storage = getStorage();
+      const fileName = `${Date.now()}.jpg`; // Unique file name
+      const storageRef = ref(storage, `userImages/${fileName}`);
+  
+      // Convert image to blob format
+      // const response = await fetch(imageUri);
+      // const blob = await response.blob();
+  
+      // Upload to Firebase Storage
+      await uploadBytes(storageRef, blob);
+  
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log("Image uploaded successfully:", downloadURL);
+  
+      updateMedicationDetails('image', downloadURL);
+  
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      if (error instanceof FirebaseError) {
+        console.error("Firebase error code:", error.code);
+        console.error("Firebase error message:", error.message);
+        console.error("Firebase error details:", error.customData);
+      }
+    }
+  };
+
+  const uriToBlob = async (uri) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function () {
+        reject(new Error("Failed to convert URI to Blob"));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
+      xhr.send(null);
+    });
   };
 
   const showPicker = () => setcalendarPickerVisible(true);

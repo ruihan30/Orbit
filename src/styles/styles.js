@@ -118,7 +118,6 @@ export const styles = StyleSheet.create({
   },
   alarms: {
     paddingHorizontal: 12,
-    gap: 8,
     position: 'relative'
   },
   linearGradient: {
@@ -132,12 +131,13 @@ export const styles = StyleSheet.create({
   alarmItem: {
     backgroundColor: COLORS.white, 
     paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
+    // paddingTop: 8,
+    // paddingBottom: 12,
+    paddingVertical: 8,
     borderColor: COLORS.grey300,
     borderRadius: 24,
     marginBottom: 8,
-    gap: 8,
+    // gap: 8,
     elevation: 1
   },
   numberOfMeds: {

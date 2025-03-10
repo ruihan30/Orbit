@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
-import { House, Bell, User, CaretDown, Minus, ArrowCircleDown, Plus, Scroll } from 'phosphor-react-native';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, TouchableOpacity, TouchableHighlight } from 'react-native';
+import { House, Bell, User, CaretDown, Minus, ArrowCircleDown, Plus, Scroll, Pill } from 'phosphor-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Appbar, TouchableRipple } from 'react-native-paper';
 import { COLORS } from '../colors/colors.js';
@@ -14,18 +14,30 @@ import { getAuth, signOut } from 'firebase/auth';
 import useAuthStore from '../store/useAuthStore.js';
 import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { useBottomSheet } from '../components/bottomSheet.js';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native'; 
+import { shallow } from 'zustand/shallow';
+import useAlarmStore from '../store/useAlarmStore.js';
+import useMedStore from '../store/useMedStore.js';
 
 import { db } from '../utilities/firebaseConfig.js';
 import { collection, getDocs, addDoc, getDoc, doc } from "firebase/firestore";
 
-export default function Home({ onNavigateTo }) {
+export default function Home({ onNavigateTo, route }) {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const loading = useAlarmStore((state) => state.loading)
+  const { medications, fetchMedications } = useMedStore();
+  const { alarms, fetchAlarms, updateAlarm } = useAlarmStore(); 
+  const [groupedAlarms, setGroupedAlarms] = useState(null);
+  const [alarmsFetched, setAlarmsFetched] = useState(false); 
 
   const [isVisible, setIsVisible] = useState(false);
+
+  const { today, week } = getCurrentWeek();
+  const [selectedDay, setSelectedDay] = useState(getFormattedDate(today));
+  const [alarmsForSelectedDay, setAlarmsForSelectedDay] = useState(groupedAlarms?.[today.day] || []);
 
   const handleScroll = (event) => {
     const contentOffsetY = event.nativeEvent.contentOffset.y;
@@ -37,7 +49,7 @@ export default function Home({ onNavigateTo }) {
     }
   };
 
-  const getCurrentWeek = () => {
+  function getCurrentWeek() {
     const today = new Date(); 
     const dayOfWeek = today.getDay(); 
     const currentDay = today.toLocaleDateString('en-US', { weekday: 'short' });
@@ -65,18 +77,9 @@ export default function Home({ onNavigateTo }) {
     return { today: { date: currentDate, month: currentMonth, year: currentYear, day: currentDay }, week };
   };
 
-  const getFormattedDate = (dayData) => {
+  function getFormattedDate(dayData) {
     return `${dayData.date} ${dayData.month} ${dayData.year}, ${dayData.day}`;
   };
-
-  const { today, week } = getCurrentWeek();
-  const [selectedDay, setSelectedDay] = useState(null);
-  
-  // if (loading) {}
-  if (!isAuthenticated || !user) {
-    navigation.navigate('Landing');
-    return null;
-  }
 
   const handleLogout = () => {
     const auth = getAuth();
@@ -91,45 +94,89 @@ export default function Home({ onNavigateTo }) {
     });
   };
 
-  const { openBottomSheet, closeBottomSheet } = useBottomSheet();
-
-  const addUser = async () => {
-    try {
-      const docRef = await addDoc(collection(db, "user"), {
-        // name: user.name, 
-        uid: user.uid,
-        email: user.email,
-        createdAt: user.createdAt,
+  const groupAlarmsByDay = (alarms) => {
+    const grouped = {};
+    if (alarms) {
+      alarms.forEach((alarm) => {
+        alarm.days.forEach((day) => {
+          if (!grouped[day]) {
+            grouped[day] = [];
+          }
+          grouped[day].push(alarm);
+        });
       });
+    };
+    return grouped;
+  };
+
+  const convertTimeTo24Hour = (timeStr) => {
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
   
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error("Error adding document: ", error);
+    if (modifier === "pm" && hours !== 12) {
+      hours += 12; // Convert PM to 24-hour format
+    } else if (modifier === "am" && hours === 12) {
+      hours = 0; // Convert 12 AM to 00:00
+    }
+  
+    return hours * 60 + minutes; // Convert time to total minutes for easy sorting
+  };
+
+  const handleToggleEnabled = (alarmId) => {
+    const updatedAlarm = alarms.find((alarm) => alarm.id === alarmId);
+    
+    if (updatedAlarm) {
+      const updatedAlarmData = { ...updatedAlarm, enabled: !updatedAlarm.enabled };
+      
+      updateAlarm(updatedAlarmData);
+    
+      const updatedAlarmsForDay = alarmsForSelectedDay.map((alarm) => {
+        if (alarm.id === alarmId) {
+          return { ...alarm, enabled: !alarm.enabled };
+        }
+        return alarm;
+      });
+      setAlarmsForSelectedDay(updatedAlarmsForDay);
     }
   };
 
-  async function fetchData() {
-    const auth = getAuth();
-    const user = auth.currentUser;
-  
-    if (!user) {
-      console.error("No authenticated user.");
-      return;
+  // check for persisted storage
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      navigation.navigate('Landing');
     }
-  
-    try {
-      const userDocRef = doc(db, "user", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-  
-      if (userDocSnap.exists()) {
-        console.log("User Data:", userDocSnap.data());
-      } else {
-        console.log("No such document!");
-      }
-    } catch (error) {
-      console.error("Error fetching user document:", error);
+  }, [isAuthenticated, user, navigation]);
+
+  useEffect(() => {
+    if (alarmsFetched && alarms.length > 0) {
+      const grouped = groupAlarmsByDay(alarms);
+      setGroupedAlarms(grouped);
+      setSelectedDay(getFormattedDate(today));
+      setAlarmsForSelectedDay(grouped?.[today.day] || []);
     }
-  }
+  }, [alarms, alarmsFetched]);
+
+  // useEffect(() => {
+  //   if (route?.params?.message) {
+  //     console.log('Data received from previous screen:', route.params.message);
+  //   }
+  // }, [route?.params?.message]);
+
+  // when focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchMedications();
+      fetchAlarms();
+      setAlarmsFetched(true);
+      console.log('focused')
+    }, [])
+  );
+
+  // if (loading) {}
+  // if (!isAuthenticated || !user) {
+  //   navigation.navigate('Landing');
+  //   return null;
+  // }
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
@@ -157,17 +204,16 @@ export default function Home({ onNavigateTo }) {
           />
         </Appbar.Header>
 
-        <Button size='small' type='fill' label='Test bottom sheet' onPress={() => openBottomSheet(
-            <View>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>Medication Details</Text>
-              <Text>Paracetamol - 500mg</Text>
-            </View>
-          )}></Button>
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
+        {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button>
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
+        <Button size='small' type='fill' label='Test alarms details page' onPress={() => navigation.navigate('AlarmDetails')}></Button>
         {/* <Button size='small' type='fill' label='Test database' onPress={() => console.log(openBottomSheet)}></Button> */}
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
-        <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user.uid)}></Button>
+        <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user.uid)}></Button> */}
         <Button size='small' type='fill' label='Test logout' onPress={() => handleLogout()}></Button>
-         */}
+        
+
         <ScrollView 
           stickyHeaderIndices={[1]}
           showsVerticalScrollIndicator={false}
@@ -184,14 +230,30 @@ export default function Home({ onNavigateTo }) {
 
                   if (isToday) {
                     return (
-                      <Pressable key={index} style={styles.weekBtnToday} onPress={() => setSelectedDay(getFormattedDate(dayData))}>
+                      <Pressable 
+                        key={index} 
+                        style={styles.weekBtnToday} 
+                        onPress={() => {
+                          setSelectedDay(getFormattedDate(dayData));
+                          const alarmsForDay = groupedAlarms?.[dayData.day] || [];
+                          alarmsForDay.sort((a, b) => convertTimeTo24Hour(a.time) - convertTimeTo24Hour(b.time));
+                          setAlarmsForSelectedDay(alarmsForDay || []);
+                        }}>
                         <Text style={{fontFamily: 's-regular', fontSize: 14, color: COLORS.white}}>{dayData.day}</Text>
                         <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.white}}>{dayData.date}</Text>
                       </Pressable>
                     );
                   } else {
                     return (
-                      <Pressable key={index} style={isSelected ? styles.weekBtnSelected : styles.weekBtn} onPress={() => setSelectedDay(getFormattedDate(dayData))}>
+                      <Pressable 
+                        key={index} 
+                        style={isSelected ? styles.weekBtnSelected : styles.weekBtn} 
+                        onPress={() => { 
+                          setSelectedDay(getFormattedDate(dayData));
+                          const alarmsForDay = groupedAlarms?.[dayData.day] || [];
+                          alarmsForDay.sort((a, b) => convertTimeTo24Hour(a.time) - convertTimeTo24Hour(b.time));
+                          setAlarmsForSelectedDay(alarmsForDay || []);
+                        }}>
                         <Text style={{fontFamily: 's-regular', fontSize: 14, color: COLORS.grey450}}>{dayData.day}</Text>
                         <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>{dayData.date}</Text>
                       </Pressable>
@@ -230,137 +292,74 @@ export default function Home({ onNavigateTo }) {
           <View style={styles.alarms}>
 
             {/* Pressable alarm, based on time */}
-            <Pressable style={styles.alarmItem}>
-              <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingLeft: 12}]}>
-                <View style={[styles.flexRow, {gap: 12, alignItems: 'center'}]}>
-                  <Text style={{fontFamily: 's-semibold', fontSize: 28, color: COLORS.grey800, textAlign: 'center'}}>
-                    10.30 am
-                  </Text>
-                  <View style={styles.numberOfMeds}>
-                    <Text style={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.pink700}}>3</Text>
-                  </View>
-                </View>
-                <Switch></Switch>
-              </View>
-
-              <Button size='small' type='outline' label='Show More' onPress={() => handleLogout()}></Button>
-              
-              <View style={{gap: 16}}>
-                <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
-                  <TouchableRipple 
-                    style={styles.alarmMedicationRipple} 
-                    rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('AlarmDetails')}
-                    borderless={true}
-                  >
-                    <View style={styles.alarmMedication}>
-                      <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 16,}}></View>
-                      <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
-                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.pink700, width: '100%'}} numberOfLines={1}>
-                          Paracetamol
+            {alarmsForSelectedDay.length > 0 ? (
+              alarmsForSelectedDay.map((alarm, index) => (
+                <TouchableRipple
+                  style={styles.alarmItem} 
+                  key={index}
+                  onPress={() =>  navigation.navigate('AlarmDetails', { alarm: alarm })}
+                  rippleColor={'rgba(51,51,51,0.25)'}
+                  borderless={true}
+                  delayPressIn={80}
+                >
+                  <View>
+                    <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingLeft: 12, paddingVertical: 8, marginBottom: 8}]}>
+                      <View style={[styles.flexColumn, {alignItems: 'flex-start'}]}>
+                        <Text style={{fontFamily: 's-semibold', fontSize: 28, color: COLORS.grey800, textAlign: 'center'}}>
+                          {alarm.time}
                         </Text>
-                        <View style={{justifyContent: 'flex-end', flex: 1}}>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
-                        </View>
                       </View>
+                      <Switch 
+                        style={{height: 20}}
+                        value={alarm.enabled}
+                        onValueChange={() => handleToggleEnabled(alarm.id)}
+                        trackColor={{false: COLORS.grey400, true: COLORS.pink300}}
+                        thumbColor={alarm.enabled ? COLORS.pink500 : COLORS.grey200}
+                      />
                     </View>
-                  </TouchableRipple>
-                  <View style={[styles.flexRow, {gap: 4, width: '100%', flexWrap: 'wrap'}]}>
-                    <Chip label='Drowsiness'/>
-                    <Chip label='Fatigue'/>
+                    
+                    <View style={{gap: 16, paddingBottom: 16}}>
+                      {alarm.medicationIds.map((medicationId) => (
+                        medications
+                          .filter((medication) => medication.id === medicationId)
+                          .map((med) => (
+                            <View style={[styles.flexColumn, {gap: 8, flex: 1}]} key={med.id}>
+                              <View style={styles.alarmMedicationRipple} >
+                                <View style={styles.alarmMedication}>
+                                  <View style={{height: 100, width: 100, backgroundColor: COLORS.grey200, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center'}}>
+                                    {
+                                      med.image ? (<Image source={{ uri: med.image }} style={[styles.medicationImg, {zIndex: 1}]} />) 
+                                      : <Pill size={44} color={COLORS.grey400}/>
+                                    }
+                                  </View>
+                                  <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
+                                    <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.pink700, width: '100%'}} numberOfLines={1}>
+                                      {med.name}
+                                    </Text>
+                                    <View style={{justifyContent: 'flex-end', flex: 1}}>
+                                      <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>{med.purpose}</Text>
+                                      <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>{med.dosage} {med.medicineType}</Text>
+                                    </View>
+                                  </View>
+                                </View>
+                              </View>
+                              <View style={[styles.flexRow, {gap: 4, width: '100%', flexWrap: 'wrap', paddingHorizontal: 8}]}>
+                                {med.sideEffects.map((sideEffect) => (
+                                  <Chip label={sideEffect} key={sideEffect}/>
+                                ))}
+                              </View>
+                            </View>
+                          ))
+                      ))}
+                    </View>
                   </View>
-                </View>
+                </TouchableRipple>
+            ))) : (
+              <Text></Text> 
+            )}
 
-                <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
-                  <TouchableRipple 
-                    style={styles.alarmMedicationRipple} 
-                    rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('AlarmDetails')}
-                    borderless={true}
-                  >
-                    <View style={styles.alarmMedication}>
-                      <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 16,}}></View>
-                      <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
-                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800, width: '100%'}} numberOfLines={1}>
-                          Paracetamol
-                        </Text>
-                        <View style={{justifyContent: 'flex-end', flex: 1}}>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </TouchableRipple>
-                  <View style={[styles.flexRow, {gap: 4, width: '100%', flexWrap: 'wrap'}]}>
-                    <Chip label='Drowsiness'/>
-                    <Chip label='Fatigue'/>
-                  </View>
-                </View>
-              </View>
-            </Pressable>
+            <Text>no alarms</Text>
 
-            <Pressable style={styles.alarmItem}>
-              <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingHorizontal: 8}]}>
-                <Switch></Switch>
-                <Text style={{fontFamily: 's-semibold', fontSize: 24, color: COLORS.grey800, textAlign: 'center'}}>10.30 am</Text>
-                <Minus size={28} color={COLORS.grey500} weight='regular' />
-              </View>
-              
-              <View style={{gap: 16}}>
-                <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
-                  <TouchableRipple 
-                    style={styles.alarmMedicationRipple} 
-                    rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('AlarmDetails')}
-                    borderless={true}
-                  >
-                    <View style={styles.alarmMedication}>
-                      <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 16,}}></View>
-                      <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
-                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800, width: '100%'}} numberOfLines={1}>
-                          Paracetamol
-                        </Text>
-                        <View style={{justifyContent: 'flex-end', flex: 1}}>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </TouchableRipple>
-                  <View style={[styles.flexRow, {gap: 4, width: '100%', flexWrap: 'wrap'}]}>
-                    <Chip label='Drowsiness'/>
-                    <Chip label='Fatigue'/>
-                  </View>
-                </View>
-
-                <View style={[styles.flexColumn, {gap: 8, flex: 1}]}>
-                  <TouchableRipple 
-                    style={styles.alarmMedicationRipple} 
-                    rippleColor={'rgba(193,114,114,0.15)'}
-                    onPress={() => navigation.navigate('AlarmDetails')}
-                    borderless={true}
-                  >
-                    <View style={styles.alarmMedication}>
-                      <View style={{height: 100, width: 100, backgroundColor: COLORS.grey300, borderRadius: 16,}}></View>
-                      <View style={[styles.flexColumn, styles.alarmMedicationInfo]}>
-                        <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800, width: '100%'}} numberOfLines={1}>
-                          Paracetamol
-                        </Text>
-                        <View style={{justifyContent: 'flex-end', flex: 1}}>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>Runny Nose</Text>
-                          <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey600}}>2 tablets</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </TouchableRipple>
-                  <View style={[styles.flexRow, {gap: 4, width: '100%', flexWrap: 'wrap'}]}>
-                    <Chip label='Drowsiness'/>
-                    <Chip label='Fatigue'/>
-                  </View>
-                </View>
-              </View>
-            </Pressable>
           </View>
 
         </ScrollView>

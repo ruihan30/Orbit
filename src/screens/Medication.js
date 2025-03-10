@@ -15,42 +15,13 @@ import { collection, getDocs } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
 import { useFocusEffect } from '@react-navigation/native'; 
+import useMedStore from '../store/useMedStore.js';
 
 export default function Medication() {
   const navigation = useNavigation();
   const [boxWidth, setBoxWidth] = useState(null);
-  const [medications, setMedications] = useState();
-
-  const fetchMedications = async () => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        console.error("No authenticated user.");
-        return;
-      }
-
-      const medicationsRef = collection(db, "user", user.uid, "medications");
-      const querySnapshot = await getDocs(medicationsRef);
-
-      const medicationsList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      // console.log("Medications:", medicationsList);
-      setMedications(medicationsList);
-    } catch (error) {
-      console.error("Error fetching medications:", error);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchMedications();
-    }, [])
-  );
+  
+  const { medications, fetchMedications } = useMedStore();
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
@@ -140,7 +111,7 @@ export default function Medication() {
                     </View>
                   </View>
                   
-                  {med.alaramSet ? (
+                  {med.alarmSet ? (
                     <View style={[styles.flexRow, {gap: 6, padding: 6, backgroundColor: COLORS.successFaded, borderRadius: 20, justifyContent: 'center'}]}>
                       <Alarm size={16} color={COLORS.success} weight= 'bold'/>
                       <Text style={[styles.medicationHeader, {color: COLORS.success}]}>Alarm set</Text>

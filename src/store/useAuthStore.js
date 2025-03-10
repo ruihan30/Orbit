@@ -25,8 +25,8 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage', // Key to store in AsyncStorage
-      // getStorage: () => AsyncStorage, // Specify AsyncStorage as the storage engine
       storage: createJSONStorage(() => AsyncStorage)
+      // getStorage: () => AsyncStorage, // Specify AsyncStorage as the storage engine
       // getStorage: createJSONStorage(() => AsyncStorage)
     }
   )

@@ -7,6 +7,7 @@ import { Sparkle, House, Pill, Planet, Plus} from 'phosphor-react-native';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import { BottomSheetProvider, useBottomSheet } from './src/components/bottomSheet.js';
 import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -24,6 +25,8 @@ import AlarmDetails from './src/screens/actions/alarmDetails.js';
 import MedicationDetails from './src/screens/actions/medicationDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
+import useMedStore from './src/store/useMedStore.js';
+import useAlarmStore from './src/store/useAlarmStore.js';
 
 export default function App() {
 
@@ -53,6 +56,10 @@ export default function App() {
   // Nav Bar
   const NavBar = () => {
     const [index, setIndex] = useState(0);
+    const { medications, fetchMedications } = useMedStore();
+    const { alarms, fetchAlarms } = useAlarmStore();
+    const [isUserLoaded, setIsUserLoaded] = useState(false);
+
     const routes = [
       {
         key: 'home',
@@ -104,9 +111,39 @@ export default function App() {
       }
     };
 
+    useEffect(() => {
+      // Listen for auth state changes
+      const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
+        if (user) {
+          setIsUserLoaded(true); // User is authenticated and loaded
+        } else {
+          setIsUserLoaded(false); // User is not authenticated
+        }
+      });
+  
+      // Cleanup the listener when the component unmounts
+      return () => unsubscribe();
+    }, []);
+
     const handleTabChange = (newIndex) => {
       setIndex(newIndex); // Change the index based on the tab you want to navigate to
     };
+
+    // useEffect(() => {
+    //   if (isUserLoaded) {
+    //     fetchAlarms();
+    //     fetchMedications();
+
+    //     if (index === 0) {
+    //       fetchAlarms();
+    //     }
+
+    //     if (index === 1) {
+    //       console.log('navigated to 1')
+    //       fetchMedications(); 
+    //     }
+    //   }
+    // }, [index, fetchMedications, fetchAlarms, isUserLoaded]);
 
     return (
       <BottomNavigation
@@ -164,7 +201,6 @@ export default function App() {
                 <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
               </Stack.Navigator>
             </NavigationContainer>
-            {/* <BottomSheetComponent/> */}
           </BottomSheetProvider>
         </GestureHandlerRootView>
       </AuthProvider>
