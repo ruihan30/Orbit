@@ -27,6 +27,7 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "scheme": "Orbit"
   }
 }

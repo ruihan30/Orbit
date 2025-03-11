@@ -88,9 +88,9 @@ export default function Home({ onNavigateTo, route }) {
       useAuthStore.getState().logout();
       console.log(isAuthenticated, user);
       
-      if (navigation.isFocused()) {
-        navigation.navigate('Landing');
-      }
+      // if (navigation.isFocused()) {
+      //   navigation.navigate('Landing');
+      // }
     });
   };
 
@@ -141,11 +141,11 @@ export default function Home({ onNavigateTo, route }) {
   };
 
   // check for persisted storage
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      navigation.navigate('Landing');
-    }
-  }, [isAuthenticated, user, navigation]);
+  // useEffect(() => {
+  //   if (!isAuthenticated || !user) {
+  //     navigation.navigate('Landing');
+  //   }
+  // }, [isAuthenticated, user, navigation]);
 
   useEffect(() => {
     if (alarmsFetched && alarms.length > 0) {
@@ -205,8 +205,8 @@ export default function Home({ onNavigateTo, route }) {
         </Appbar.Header>
 
         <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
-        {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button>
-        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button>
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button>
         <Button size='small' type='fill' label='Test alarms details page' onPress={() => navigation.navigate('AlarmDetails')}></Button>
         {/* <Button size='small' type='fill' label='Test database' onPress={() => console.log(openBottomSheet)}></Button> */}
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>

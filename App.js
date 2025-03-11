@@ -7,12 +7,17 @@ import { Sparkle, House, Pill, Planet, Plus} from 'phosphor-react-native';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import { BottomSheetProvider, useBottomSheet } from './src/components/bottomSheet.js';
 import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation } from 'react-native-paper';
 import { createStackNavigator } from '@react-navigation/stack';
+
+import { getAuth, onAuthStateChanged, signInWithCredential, GoogleAuthProvider} from 'firebase/auth';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import { app } from './src/utilities/firebaseConfig.js';
+import useAuthStore from './src/store/useAuthStore.js';
 
 import Home from './src/screens/Home';
 import Medication from './src/screens/Medication';
@@ -29,6 +34,12 @@ import useMedStore from './src/store/useMedStore.js';
 import useAlarmStore from './src/store/useAlarmStore.js';
 
 export default function App() {
+  const user = useAuthStore((state) => state.user);
+  const [loading, setLoading] = useState(false);
+  const auth = getAuth(app);
+  // const [request, response, promptAsync] = Google.useAuthRequest({
+  //   androidClientId: '226869919323-nkog4dbbqniscijkhddfik67fouq1duv.apps.googleusercontent.com'
+  // });
 
   // Fonts
   const [fontsLoaded] = useFonts ({
@@ -186,6 +197,43 @@ export default function App() {
 
   const Stack = createStackNavigator();
 
+  const checkLocalUser = async () => {
+    try {
+      setLoading(true);
+      console.log(user);
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);    
+    }
+  }
+
+  // useEffect(() => {
+  //   if (response?.type === 'success') {
+  //     const {id_token } = response.params;
+  //     const credential = GoogleAuthProvider.credential(id_token);
+  //     signInWithCredential(auth, credential);
+  //   }
+  // }, [response])
+
+  useEffect(() => {
+    checkLocalUser();
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log(JSON.stringify(user, null, 2));
+        // setUserInfo(user);
+      } else {
+        console.log('else')
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
+  if (loading) 
+    return (
+      <View style={{fontSize: 40}}><Text>LOADING</Text></View>
+    );
   return (
     <SafeAreaProvider style={styles.container}>
       <AuthProvider>
@@ -193,12 +241,19 @@ export default function App() {
           <BottomSheetProvider>
             <NavigationContainer>
               <Stack.Navigator>
-                <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
-                <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
-                <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
-                <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
-                <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
-                <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
+                {user ? (
+                  <>
+                    <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
+                    <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
+                    <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
+                  </>
+                ) : (
+                  <>
+                    <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
+                    <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+                    <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
+                  </>
+                )}
               </Stack.Navigator>
             </NavigationContainer>
           </BottomSheetProvider>

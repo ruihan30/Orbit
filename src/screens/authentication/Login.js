@@ -1,4 +1,4 @@
-import { React, useState, useRef }from 'react';
+import { React, useState, useRef, useEffect }from 'react';
 import { Image, View, Text, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, Snackbar } from 'react-native-paper';
@@ -9,16 +9,23 @@ import { styles } from '../../styles/styles.js';
 import { GoogleLogo, X } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithCredential} from 'firebase/auth';
 // import { GoogleSignin } from '@react-native-google-signin/google-signin'; 
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
 import useAuthStore from '../../store/useAuthStore.js';
-import app from '../../utilities/firebaseConfig.js';
+import { app, auth } from '../../utilities/firebaseConfig.js';
 import { db } from '../../utilities/firebaseConfig.js';
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const navigation = useNavigation();
   const login = useAuthStore((state) => state.login);
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: '226869919323-nkog4dbbqniscijkhddfik67fouq1duv.apps.googleusercontent.com'
+  });
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -74,10 +81,7 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-  
       const idToken = await user.getIdToken();
-      // console.log('Logged in as:', user.email);
-      // console.log('ID Token:', idToken);
       
       login(user, idToken);
   
@@ -98,27 +102,35 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      // Sign in with Google
-      const { idToken } = await GoogleSignin.signIn();
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     // Sign in with Google
+  //     const { idToken } = await GoogleSignin.signIn();
   
-      // Create a Firebase credential with the Google ID token
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+  //     // Create a Firebase credential with the Google ID token
+  //     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
   
-      // Sign in the user with Firebase
-      const userCredential = await auth().signInWithCredential(googleCredential);
+  //     // Sign in the user with Firebase
+  //     const userCredential = await auth().signInWithCredential(googleCredential);
   
-      // Access user details
-      const user = userCredential.user;
-      console.log('Logged in as:', user.email);
-      // Navigate or handle the logged-in user
-    } catch (error) {
-      console.error('Error during Google login:', error.message);
-      // Handle errors (e.g., display a toast or message)
+  //     // Access user details
+  //     const user = userCredential.user;
+  //     console.log('Logged in as:', user.email);
+  //     // Navigate or handle the logged-in user
+  //   } catch (error) {
+  //     console.error('Error during Google login:', error.message);
+  //     // Handle errors (e.g., display a toast or message)
+  //   }
+  // };
+  
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const {id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential);
     }
-  };
-  
+  }, [response])
+
   return (
     <SafeAreaView style={loginStyles.container}>
 
@@ -171,7 +183,7 @@ export default function Login() {
       <View style={loginStyles.buttons}>
         <Button size='large' type='fill' label='Log in' onPress={handleLogin}></Button>
         <View style={{height: 2, borderTopWidth: 0.5, marginHorizontal: 20, borderColor: COLORS.grey400 }}></View>
-        <Button onPress={handleGoogleLogin} size='large' type='outline' label='Log in with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button>
+        <Button onPress={() => promptAsync()} size='large' type='outline' label='Log in with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button>
       </View>
       
       {/* Footer */}
