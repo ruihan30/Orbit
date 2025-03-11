@@ -23,3 +23,4 @@ const db = getFirestore(app);
 export { auth, db };
 
 // android: 226869919323-nkog4dbbqniscijkhddfik67fouq1duv.apps.googleusercontent.com
+// 226869919323-5ktefds9afuu9qg5ovamsc75rospoqlo.apps.googleusercontent.com

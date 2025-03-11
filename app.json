@@ -28,6 +28,12 @@
     "plugins": [
       "expo-font"
     ],
-    "scheme": "Orbit"
+    "scheme": "Orbit",
+    "extra": {
+      "eas": {
+        "projectId": "06ed9a44-27aa-440c-b8c4-54a76378e7c9"
+      }
+    }
   }
 }
+

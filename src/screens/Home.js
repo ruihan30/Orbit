@@ -140,15 +140,8 @@ export default function Home({ onNavigateTo, route }) {
     }
   };
 
-  // check for persisted storage
-  // useEffect(() => {
-  //   if (!isAuthenticated || !user) {
-  //     navigation.navigate('Landing');
-  //   }
-  // }, [isAuthenticated, user, navigation]);
-
   useEffect(() => {
-    if (alarmsFetched && alarms.length > 0) {
+    if (alarmsFetched) {
       const grouped = groupAlarmsByDay(alarms);
       setGroupedAlarms(grouped);
       setSelectedDay(getFormattedDate(today));
@@ -167,17 +160,29 @@ export default function Home({ onNavigateTo, route }) {
     useCallback(() => {
       fetchMedications();
       fetchAlarms();
-      setAlarmsFetched(true);
       console.log('focused')
     }, [])
   );
 
-  // if (loading) {}
-  // if (!isAuthenticated || !user) {
-  //   navigation.navigate('Landing');
-  //   return null;
-  // }
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchMedications();
+        await fetchAlarms();
+        setAlarmsFetched(true);
+        console.log('mounted');
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    fetchData();
+  }, [])
+  
+  // if (!alarmsFetched) 
+  //   return (
+  //     <View style={{fontSize: 40}}><Text>LOADING</Text></View>
+  //   );
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>
@@ -292,7 +297,7 @@ export default function Home({ onNavigateTo, route }) {
           <View style={styles.alarms}>
 
             {/* Pressable alarm, based on time */}
-            {alarmsForSelectedDay.length > 0 ? (
+            {(alarmsFetched && (alarmsForSelectedDay.length > 0)) ? (
               alarmsForSelectedDay.map((alarm, index) => (
                 <TouchableRipple
                   style={styles.alarmItem} 

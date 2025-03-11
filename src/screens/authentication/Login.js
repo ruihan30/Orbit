@@ -17,6 +17,8 @@ import useAuthStore from '../../store/useAuthStore.js';
 import { app, auth } from '../../utilities/firebaseConfig.js';
 import { db } from '../../utilities/firebaseConfig.js';
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import useMedStore from '../../store/useMedStore.js';
+import useAlarmStore from '../../store/useAlarmStore.js';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -24,8 +26,10 @@ export default function Login() {
   const navigation = useNavigation();
   const login = useAuthStore((state) => state.login);
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: '226869919323-nkog4dbbqniscijkhddfik67fouq1duv.apps.googleusercontent.com'
+    androidClientId: '226869919323-5ktefds9afuu9qg5ovamsc75rospoqlo.apps.googleusercontent.com'
   });
+  const { medications, fetchMedications } = useMedStore();
+  const { alarms, fetchAlarms, updateAlarm } = useAlarmStore(); 
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -91,6 +95,9 @@ export default function Login() {
         email: user.email,
         createdAt: serverTimestamp(), 
       });
+
+      await fetchMedications();
+      await fetchAlarms();
   
       navigation.navigate('NavBar'); 
   

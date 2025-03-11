@@ -208,16 +208,23 @@ export default function App() {
     }
   }
 
-  // useEffect(() => {
-  //   if (response?.type === 'success') {
-  //     const {id_token } = response.params;
-  //     const credential = GoogleAuthProvider.credential(id_token);
-  //     signInWithCredential(auth, credential);
-  //   }
-  // }, [response])
+  useEffect(() => {
+    const checkUser = () => {
+      setLoading(true);
+      if (user) {
+        // User found in Zustand store, set loading to false
+        setLoading(false);
+      } else {
+        // No user, set loading to false after checking
+        setLoading(false);
+      }
+    };
+
+    checkUser(); // Check if user exists in Zustand store on mount
+  }, [user])
 
   useEffect(() => {
-    checkLocalUser();
+    // checkLocalUser();
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         console.log(JSON.stringify(user, null, 2));
@@ -241,6 +248,7 @@ export default function App() {
           <BottomSheetProvider>
             <NavigationContainer>
               <Stack.Navigator>
+                 
                 {user ? (
                   <>
                     <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
