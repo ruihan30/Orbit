@@ -23,6 +23,17 @@ export default function Medication() {
   
   const { medications, fetchMedications } = useMedStore();
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchMedications();
+      console.log('focused')
+    }, [])
+  );
+
+  useEffect(() => {
+    fetchMedications();
+  }, [])
+
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>

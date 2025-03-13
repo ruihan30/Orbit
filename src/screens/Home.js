@@ -167,6 +167,7 @@ export default function Home({ onNavigateTo, route }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setAlarmsFetched(false);
         await fetchMedications();
         await fetchAlarms();
         setAlarmsFetched(true);
@@ -178,6 +179,7 @@ export default function Home({ onNavigateTo, route }) {
   
     fetchData();
   }, [])
+  
   
   // if (!alarmsFetched) 
   //   return (
@@ -207,12 +209,13 @@ export default function Home({ onNavigateTo, route }) {
             } 
             onPress={() => {}} 
           />
+          
         </Appbar.Header>
 
-        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
+        {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
         <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button>
-        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button>
-        <Button size='small' type='fill' label='Test alarms details page' onPress={() => navigation.navigate('AlarmDetails')}></Button>
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
+        <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button>
         {/* <Button size='small' type='fill' label='Test database' onPress={() => console.log(openBottomSheet)}></Button> */}
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button>
         <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user.uid)}></Button> */}
