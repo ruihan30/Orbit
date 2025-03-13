@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import { db } from '../utilities/firebaseConfig.js';
-import { collection, getDocs, addDoc, getDoc, doc, updateDoc } from "firebase/firestore";
-import { getAuth } from 'firebase/auth';
+import { collection, getDocs, addDoc, getDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import useAuthStore from './useAuthStore.js';
-
-// const auth = getAuth();
 
 const useAlarmStore = create((set) => ({
   alarms: [],
@@ -14,29 +12,36 @@ const useAlarmStore = create((set) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   fetchAlarms: async () => {
-    const user = getAuth().currentUser;
+    const auth = getAuth();
     set({ loading: true }); // Set loading to true when fetching
-    try {
-      const alarmsCollection = collection(db, "user", user.uid, 'alarms');
-      const querySnapshot = await getDocs(alarmsCollection);
-      const alarms = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      set({ alarms }); // Set fetched medications in the store
-      set({ loading: false }); // Set loading to false after fetching
-      console.log('fetched alarm')
-    } catch (error) {
-      console.error('Error fetching alarms from Firestore:', error);
-      set({ error: error.message, loading: false }); // Handle error
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const alarmsCollection = collection(db, "user", user.uid, "alarms");
+          const querySnapshot = await getDocs(alarmsCollection);
+          const alarms = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          set({ alarms, loading: false });
+          // console.log("Fetched alarms:", alarms);
+        } catch (error) {
+          console.error("Error fetching alarms:", error);
+          set({ error: error.message, loading: false });
+        }
+      } else {
+        console.warn("No user logged in, skipping alarm fetch");
+        set({ loading: false });
+      }
+
+      unsubscribe(); // Stop listening after first call
+    });
   },
   updateAlarm: async (updatedAlarm) => {
     const user = getAuth().currentUser;
-    set({ loading: true }); // Set loading to true when updating
+    set({ loading: true }); 
 
     try {
-      // Reference to the alarm document in Firestore
       const alarmDocRef = doc(db, "user", user.uid, 'alarms', updatedAlarm.id);
       const alarmDocSnap = await getDoc(alarmDocRef);
       const existingAlarm = alarmDocSnap.data();
@@ -45,15 +50,13 @@ const useAlarmStore = create((set) => ({
         ...updatedAlarm,
       };
 
-      // Update the document in Firestore
       await updateDoc(alarmDocRef, alarmToUpdate);
 
-      // Update the alarm in the Zustand store
       set((state) => {
         const updatedAlarms = state.alarms.map((alarm) =>
           alarm.id === updatedAlarm.id ? updatedAlarm : alarm
         );
-        return { alarms: updatedAlarms }; // Update the specific alarm in the store
+        return { alarms: updatedAlarms }; 
       });
 
       set({ loading: false }); // Set loading to false after updating
@@ -69,13 +72,31 @@ const useAlarmStore = create((set) => ({
     try {
       // Exclude the 'id' property from alarmDetails before sending to Firestore
       const { id, ...alarmWithoutId } = newAlarm;
-  
-      // Add the alarm to Firestore (Firestore will generate the ID)
       const newAlarmRef = await addDoc(collection(db, "user", user.uid, "alarms"), alarmWithoutId);
   
       set({ loading: false });
     } catch (error) {
       console.error('Error adding alarm in Firestore:', error);
+      set({ error: error.message, loading: false });
+    }
+  },
+  deleteAlarm: async (alarmId) => {
+    const user = getAuth().currentUser;
+    set({ loading: true });
+
+    try {
+      const alarmDocRef = doc(db, "user", user.uid, "alarms", alarmId);
+      await deleteDoc(alarmDocRef); // Delete the alarm from Firestore
+
+      // Remove the alarm from the Zustand store
+      set((state) => {
+        const filteredAlarms = state.alarms.filter((alarm) => alarm.id !== alarmId);
+        return { alarms: filteredAlarms };
+      });
+
+      set({ loading: false });
+    } catch (error) {
+      console.error('Error deleting alarm from Firestore:', error);
       set({ error: error.message, loading: false });
     }
   },

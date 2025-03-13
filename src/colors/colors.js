@@ -67,5 +67,12 @@ export const COLORS = {
   fadedBlue: 'rgba(93,163,250,0.15)',
   fadedPurple: 'rgba(133,102,224,0.15)',
   fadedPink: 'rgba(118,104,207,0.15)',
+  red: '#D74343',
+  orange: '#F4A259',
+  yellow: '#F6D06F',
+  green: '#7ACB81',
+  blue: '#5DA3FA',
+  purple: '#7166E0',
+  pink: '#BC68CF'
 
 };

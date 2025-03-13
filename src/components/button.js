@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../colors/colors.js';
 import { TouchableRipple } from 'react-native-paper';
 
-export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(0,155,194,0.2)', customStyle, fillColor}) => {
+export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(68,114,118,0.2)', customStyle, fillColor}) => {
 
   const sizeStyles = {
     small: {
@@ -19,7 +19,7 @@ export const Button = ({ onPress, label, size, type, icon, rippleColor = 'rgba(0
       overflow: 'hidden',
     },
     fill: {
-      backgroundColor: fillColor || COLORS.teal900,
+      backgroundColor: fillColor || COLORS.green600,
       color: COLORS.white
     }, 
     outline: {

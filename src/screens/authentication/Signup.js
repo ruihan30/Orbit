@@ -1,19 +1,24 @@
 import { React, useState, useRef }from 'react';
 import { Image, View, Text, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Snackbar, TextInput } from 'react-native-paper';
+import { Snackbar, TextInput, ActivityIndicator } from 'react-native-paper';
 import { COLORS } from '../../colors/colors.js';
 import { Button } from '../../components/button.js';
 import Logo from '../../../assets/logo_name.svg';
 import { styles } from '../../styles/styles.js';
 import { GoogleLogo, X } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
+import useAuthStore from '../../store/useAuthStore.js';
+import { db } from '../../utilities/firebaseConfig.js';
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import app from '../../utilities/firebaseConfig.js'
 
 export default function Signup() {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
 
   const [email, setEmail] = useState('');
   const emailRef = useRef(null);
@@ -55,7 +60,7 @@ export default function Signup() {
     }
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     const auth = getAuth(app);
 
     if (!validatePassword(password)) {
@@ -65,18 +70,49 @@ export default function Signup() {
       return;
     } else setPasswordError('');
     
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log('User created:', user.email);
-      })
-      .catch((error) => {
-        const errorMessage = getErrorMessage(error.code);
-        setError(errorMessage);
-        onToggleSnackBar()
-        console.log(error.message);
+    try {
+      setLoading(true);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('User created:', user.email);
+
+      const loginCredential = await signInWithEmailAndPassword(auth, email, password);
+      const loggedInUser = loginCredential.user;
+      const idToken = await loggedInUser.getIdToken();
+
+      login(loggedInUser, idToken);
+  
+      const userDocRef = doc(db, "user", user.uid);
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        name: user.email,
+        createdAt: serverTimestamp(), 
       });
+  
+      navigation.navigate('NavBar'); 
+  
+    } catch (error) {
+      const errorMessage = getErrorMessage(error.code);
+      setError(errorMessage);
+      onToggleSnackBar();
+      console.log(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) 
+    return (
+      <View 
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <ActivityIndicator animating={true}/>
+      </View>
+    );
 
   return (
     <SafeAreaView style={loginStyles.container}>
@@ -88,7 +124,7 @@ export default function Signup() {
           Create an account
         </Text>
         <Text style={{fontFamily: 'bg-regular', fontSize: 16, color: COLORS.grey500, textAlign: 'center'}}>
-          Already have an account? <Text onPress={() => navigation.navigate('Login')} style={{fontFamily: 'bg-medium', color: COLORS.teal900, textDecorationLine: 'underline'}}>Log in</Text>
+          Already have an account? <Text onPress={() => navigation.replace('Login')} style={{fontFamily: 'bg-medium', color: COLORS.pink600, textDecorationLine: 'underline'}}>Log in</Text>
         </Text>
       </View>
          
@@ -103,7 +139,7 @@ export default function Signup() {
           textColor={COLORS.grey700}
           contentStyle={{fontFamily: 'bg-regular'}}
           outlineStyle={{borderRadius: 12}}
-          activeOutlineColor={COLORS.teal700}
+          activeOutlineColor={COLORS.pink600}
           ref={emailRef}
         />
 
@@ -116,7 +152,7 @@ export default function Signup() {
           textColor={COLORS.grey700}
           contentStyle={{fontFamily: 'bg-regular'}}
           outlineStyle={{borderRadius: 12}}
-          activeOutlineColor={COLORS.teal700}
+          activeOutlineColor={COLORS.pink600}
           right={<TextInput.Icon 
             icon={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'} 
             onPress={togglePasswordVisibility} 

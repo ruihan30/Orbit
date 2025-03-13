@@ -26,7 +26,7 @@ export default function AlarmDetails({ route }) {
   const user = useAuthStore((state) => state.user);
   const { alarm } = route.params || {};
   const { medications, fetchMedications } = useMedStore();
-  const { updateAlarm, addAlarm } = useAlarmStore();
+  const { updateAlarm, addAlarm, deleteAlarm } = useAlarmStore();
   const [toastVisible, setToastVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -177,7 +177,7 @@ export default function AlarmDetails({ route }) {
 
   const openBottomSheet = () => bottomSheetRef.current?.expand();
   const closeBottomSheet = () => bottomSheetRef.current?.close();
-  const handleSheetChanges = useCallback((index: number) => {
+  const handleSheetChanges = useCallback((index) => {
     // console.log('handleSheetChanges', index);
 
     const stopSound = async () => {
@@ -275,13 +275,33 @@ export default function AlarmDetails({ route }) {
   }, []);
   
   return (
-    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingTop: 20, paddingBottom: 62}}>
+    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
+
+      <View style={[styles.flexRow, {paddingVertical: 8, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: COLORS.grey300, marginBottom: 12, zIndex: 2, backgroundColor: COLORS.white, justifyContent: 'flex-end'}]}>
+        <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, flex: 1}}>
+          Alarm Details
+        </Text>
+        <Pressable 
+          style={{padding: 8, paddingHorizontal: 20}}
+          onPress={() => {
+            deleteAlarm(alarmDetails.id); 
+            navigation.setParams({ message: 'params passed back' });
+            navigation.goBack();
+            // navigation.popTo('NavBar', { message: 'message' });
+          }}
+        >
+          {alarmDetails.id && (
+            <Text style={{fontFamily: 'bg-medium', color: COLORS.error, fontSize: 14,}}>Delete Alarm</Text>
+          )}
+
+        </Pressable>
+      </View>
 
       <ScrollView style={{overflow: 'visible', flex: 1, }}>
 
         {/* Details */}
         <View style={{paddingHorizontal: 16, gap: 28}}>
-          <Button size='small' type='outline' label='test' onPress={() => console.log(alarmDetails.id)}></Button>
+          {/* <Button size='small' type='outline' label='test' onPress={() => console.log(alarmDetails.id)}></Button> */}
 
           {/* Time Picker */}
           <View style={styles.timePicker}>
@@ -389,10 +409,13 @@ export default function AlarmDetails({ route }) {
             <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16}}>Medication</Text>
             <Button 
               size='small' 
-              type='outline' 
+              type='fill' 
               label='Add Medication' 
-              icon={<Plus size={16} color={COLORS.grey700}/>} 
-              onPress={() => {setBottomSheetTitle('Add medications'); openBottomSheet(); }}></Button>
+              fillColor={COLORS.grey600}
+              icon={<Plus size={16} color={COLORS.white}/>} 
+              onPress={() => {setBottomSheetTitle('Add medications'); openBottomSheet(); }}
+              rippleColor={'rgba(51,51,51,0.25)'}
+            ></Button>
           </View>
             
           <View style={{gap: 12}}>
@@ -476,14 +499,16 @@ export default function AlarmDetails({ route }) {
           size='large' 
           type='outline' 
           label='Cancel' 
-          onPress={() => console.log('cancel')}
-          customStyle={{flex: 1}}></Button>
+          onPress={() => {
+            navigation.goBack();
+          }}
+          customStyle={{flex: 1}}
+          rippleColor={'rgba(51,51,51,0.25)'}></Button>
         <Button 
           size='large' 
           type='fill' 
           label='Save' 
           onPress={() => {
-            // updateMedicationAlarmSet(alarmDetails.medicationIds);
             validateInputs();
           }}
           customStyle={{flex: 1}}></Button>
@@ -560,7 +585,7 @@ export default function AlarmDetails({ route }) {
                         key={med.id}
                         style={[styles.medicationRipple, {backgroundColor: COLORS.grey100}]} 
                         rippleColor={'rgba(51,51,51,0.25)'}
-                        onPress={() => navigation.navigate('MedicationDetails', { medication: med })}
+                        onPress={() => navigation.navigate('MedicationDetails', { medication: med, disabled: true })}
                         borderless={true}
                       >
                         <View style={{gap: 8, position: 'relative'}}>

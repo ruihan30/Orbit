@@ -37,34 +37,12 @@ export default function Medication() {
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>
-        
-        {/* Top Bar */}
-        <Appbar.Header mode='center-aligned' style={{backgroundColor: COLORS.white}}> 
-          <Appbar.Action style={styles.profile}
-            // icon={() => 
-            //   <View style={styles.iconWrapper}>
-            //     <User size={20} color={COLORS.grey600} weight='bold' />
-            //   </View>
-            // } 
-            icon='account-outline'
-            onPress={() => {}} 
-          />
-          <Text style={styles.header}>My Medication</Text>
-          <Appbar.Action style={styles.action} 
-            icon={() => 
-              <View style={styles.iconWrapper}>
-                <Bell size={18} color={COLORS.grey800} weight='bold' />
-              </View>
-            } 
-            onPress={() => {}} 
-          />
-        </Appbar.Header>
 
         {/* <Button size='small' type='fill' label='Test' onPress={() => {console.log(boxWidth)}}></Button> */}
 
         <ScrollView 
           showsVerticalScrollIndicator={false} 
-          contentContainerStyle={[styles.flexRow, styles.medicationGrid, {paddingHorizontal: 8}]}
+          contentContainerStyle={[styles.flexRow, styles.medicationGrid, {paddingHorizontal: 8, paddingBottom: 8}]}
         >
           
           {/* First for adding */}

@@ -1,7 +1,7 @@
 import { React, useState, useRef, useEffect }from 'react';
 import { Image, View, Text, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput, Snackbar } from 'react-native-paper';
+import { TextInput, Snackbar, ActivityIndicator } from 'react-native-paper';
 import { COLORS } from '../../colors/colors.js';
 import { Button } from '../../components/button.js';
 import Logo from '../../../assets/logo_name.svg';
@@ -10,7 +10,6 @@ import { GoogleLogo, X } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithCredential} from 'firebase/auth';
-// import { GoogleSignin } from '@react-native-google-signin/google-signin'; 
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import useAuthStore from '../../store/useAuthStore.js';
@@ -25,6 +24,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function Login() {
   const navigation = useNavigation();
   const login = useAuthStore((state) => state.login);
+  const [loading, setLoading] = useState(false);
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: '226869919323-5ktefds9afuu9qg5ovamsc75rospoqlo.apps.googleusercontent.com'
   });
@@ -32,12 +32,10 @@ export default function Login() {
   const { alarms, fetchAlarms, updateAlarm } = useAlarmStore(); 
 
   const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
   const emailRef = useRef(null);
 
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
   const passwordRef = useRef(null);
   const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
 
@@ -83,6 +81,7 @@ export default function Login() {
     const auth = getAuth(app);
     
     try {
+      setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
@@ -93,12 +92,13 @@ export default function Login() {
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
+        name: user.email,
         createdAt: serverTimestamp(), 
       });
 
       await fetchMedications();
       await fetchAlarms();
-  
+
       navigation.navigate('NavBar'); 
   
     } catch (error) {
@@ -106,29 +106,10 @@ export default function Login() {
       setError(errorMessage);
       onToggleSnackBar();
       console.log(error.message);
+    } finally {
+      setLoading(false); 
     }
   };
-
-  // const handleGoogleLogin = async () => {
-  //   try {
-  //     // Sign in with Google
-  //     const { idToken } = await GoogleSignin.signIn();
-  
-  //     // Create a Firebase credential with the Google ID token
-  //     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-  
-  //     // Sign in the user with Firebase
-  //     const userCredential = await auth().signInWithCredential(googleCredential);
-  
-  //     // Access user details
-  //     const user = userCredential.user;
-  //     console.log('Logged in as:', user.email);
-  //     // Navigate or handle the logged-in user
-  //   } catch (error) {
-  //     console.error('Error during Google login:', error.message);
-  //     // Handle errors (e.g., display a toast or message)
-  //   }
-  // };
   
   useEffect(() => {
     if (response?.type === 'success') {
@@ -138,6 +119,17 @@ export default function Login() {
     }
   }, [response])
 
+  if (loading) 
+    return (
+      <View 
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <ActivityIndicator animating={true}/>
+      </View>
+    );
   return (
     <SafeAreaView style={loginStyles.container}>
 
@@ -163,7 +155,7 @@ export default function Login() {
           textColor={COLORS.grey700}
           contentStyle={{fontFamily: 'bg-regular'}}
           outlineStyle={{borderRadius: 12}}
-          activeOutlineColor={COLORS.teal700}
+          activeOutlineColor={COLORS.pink600}
           ref={emailRef}
         />
 
@@ -176,7 +168,7 @@ export default function Login() {
           textColor={COLORS.grey700}
           contentStyle={{fontFamily: 'bg-regular'}}
           outlineStyle={{borderRadius: 12}}
-          activeOutlineColor={COLORS.teal700}
+          activeOutlineColor={COLORS.pink600}
           right={<TextInput.Icon 
             icon={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'} 
             onPress={togglePasswordVisibility} 
@@ -196,7 +188,7 @@ export default function Login() {
       {/* Footer */}
       <View style={loginStyles.footer}>
         <Text style={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey500, textAlign: 'center'}}>
-          Don't have an account? <Text onPress={() => navigation.navigate('Signup')} style={{fontFamily: 'bg-medium', color: COLORS.teal900, textDecorationLine: 'underline'}}>Sign Up</Text>
+          Don't have an account? <Text onPress={() => navigation.replace('Signup')} style={{fontFamily: 'bg-medium', color: COLORS.pink600, textDecorationLine: 'underline'}}>Sign Up</Text>
         </Text>
       </View>
 

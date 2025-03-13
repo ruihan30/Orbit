@@ -23,7 +23,7 @@ import { db } from '../../utilities/firebaseConfig.js';
 export default function MedicationDetails({ route }) {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
-  const { medication } = route.params || {};
+  const { medication, disabled } = route.params || {};
   
   const MEDICINETYPE = ['Tablet(s)/ Capsule(s)', 'Spoon(s)', 'Drop(s)/ Strip(s)', 'Patch(es)' ];
   const MEALTIMES = ['before meal', 'after meal', 'after fasting', 'anytime'];
@@ -275,8 +275,11 @@ export default function MedicationDetails({ route }) {
     };
 
     const handleBackPress = () => {
-      setDiscardVisible(true); 
-      return true; 
+      if(!disabled) {
+        setDiscardVisible(true); 
+        return true; 
+      }
+      return false; 
     };
     const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
@@ -355,7 +358,7 @@ export default function MedicationDetails({ route }) {
               : <Pill size={100} color={COLORS.grey400} weight='light' />
             }
             <Pressable style={styles.cameraBtn} onPress={pickImage}>
-              <Camera size={34} color={COLORS.teal700}/>
+              <Camera size={34} color={COLORS.green600}/>
             </Pressable>
           </View>
           
@@ -376,6 +379,7 @@ export default function MedicationDetails({ route }) {
               textColor={COLORS.grey600}
               placeholderTextColor={COLORS.grey450}
               style={{paddingHorizontal: 0}}
+              disabled={disabled}
             />
 
             <View style={{gap:8}}>
@@ -386,6 +390,7 @@ export default function MedicationDetails({ route }) {
                   value={medicationDetails.dosage} 
                   onChangeText={(text) => updateMedicationDetails('dosage', text)}
                   ref={dosageRef}
+                  disabled={disabled}
                 />
                 <View style={{flex: 1, position: 'relative'}}>
                   <InputField 
@@ -396,6 +401,7 @@ export default function MedicationDetails({ route }) {
                     onSelect={(selectedValue) => updateMedicationDetails('medicineType', selectedValue)}
                     ref={medicineTypeRef}
                     onChangeText={(text) => updateMedicationDetails('medicineType', text)}
+                    disabled={disabled}
                   />
                 </View>
               </View>
@@ -410,6 +416,7 @@ export default function MedicationDetails({ route }) {
                     value={medicationDetails.mealTime} 
                     onSelect={(selectedValue) => updateMedicationDetails('mealTime', selectedValue)}
                     ref={mealTimeRef}
+                    disabled={disabled}
                   />
                 </View>
               </View>
@@ -422,6 +429,7 @@ export default function MedicationDetails({ route }) {
                   value={medicationDetails.frequency} 
                   onSelect={(selectedValue) => {updateMedicationDetails('frequency', selectedValue); handleInputs(selectedValue);}}
                   ref={frequencyRef}
+                  disabled={disabled}
                 />
               </View>
 
@@ -436,6 +444,7 @@ export default function MedicationDetails({ route }) {
                       value={medicationDetails.details} 
                       onChangeText={(text) => updateMedicationDetails('details', text)}
                       ref={detailsRef}
+                      disabled={disabled}
                     />
                   </View>
                   <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16}}>hours</Text>
@@ -452,6 +461,7 @@ export default function MedicationDetails({ route }) {
                       value={medicationDetails.details} 
                       onSelect={(selectedValue) => updateMedicationDetails('details', selectedValue)}
                       ref={detailsRef}
+                      disabled={disabled}
                     />
                   </View>
                 </View>}
@@ -464,6 +474,7 @@ export default function MedicationDetails({ route }) {
                     value={medicationDetails.details} 
                     onChangeText={(text) => updateMedicationDetails('details', text)}
                     ref={detailsRef}
+                    disabled={disabled}
                   />
                 </View>}
 
@@ -480,6 +491,7 @@ export default function MedicationDetails({ route }) {
               value={medicationDetails.purpose} 
               onChangeText={(text) => updateMedicationDetails('purpose', text)}
               required={false}
+              disabled={disabled}
             />
           </View>
 
@@ -493,6 +505,7 @@ export default function MedicationDetails({ route }) {
                 value={medicationDetails.dosagesLeft} 
                 onChangeText={(text) => updateMedicationDetails('dosagesLeft', text)}
                 required={false}
+                disabled={disabled}
               />
             </View> 
 
@@ -511,6 +524,7 @@ export default function MedicationDetails({ route }) {
                 right={<TextInput.Icon icon={() => <CalendarDots color={COLORS.grey900} size={20}/>} onPress={showPicker}/>}
                 editable={false}
                 ref={expiryDateRef}
+                disabled={disabled}
               />
             </View> 
           </View>
@@ -524,7 +538,9 @@ export default function MedicationDetails({ route }) {
                   <View key={index} style={styles.sideEffectChip}>
                     <Text style={{fontFamily: 'bg-medium', color: COLORS.pink700, fontSize: 14, paddingBottom: 2}}>{effect}</Text>
                     <Pressable
-                      onPress={() => updateMedicationDetails('sideEffects', effect, true, true)}
+                      onPress={() => {
+                        if (!disabled) updateMedicationDetails('sideEffects', effect, true, true);
+                      }}
                     >
                       <X size={18} color={COLORS.pink700}/>
                     </Pressable>
@@ -546,6 +562,7 @@ export default function MedicationDetails({ route }) {
                 textColor={COLORS.grey600}
                 placeholderTextColor={COLORS.grey450}
                 style={{paddingHorizontal: 8, height: 42, flex: 1}}
+                disabled={disabled}
               />
               <Pressable
                 style={{padding: 12, borderRadius: 100, backgroundColor: COLORS.pink500}}
@@ -580,20 +597,23 @@ export default function MedicationDetails({ route }) {
         </Snackbar>
 
         {/* Bottom Buttons */}
-        <View style={styles.bottomBtns}>
-          <Button 
-            size='large' 
-            type='outline' 
-            label='Cancel' 
-            onPress={() => setDiscardVisible(true)}
-            customStyle={{flex: 1}}></Button>
-          <Button 
-            size='large' 
-            type='fill' 
-            label='Save' 
-            onPress={validateInputs}
-            customStyle={{flex: 1}}></Button>
-        </View>
+        {!disabled && (
+          <View style={styles.bottomBtns}>
+            <Button 
+              size='large' 
+              type='outline' 
+              label='Cancel' 
+              onPress={() => setDiscardVisible(true)}
+              customStyle={{flex: 1}}
+              rippleColor={'rgba(51,51,51,0.25)'}></Button>
+            <Button 
+              size='large' 
+              type='fill' 
+              label='Save' 
+              onPress={validateInputs}
+              customStyle={{flex: 1}}></Button>
+          </View>
+        )}
 
       </View>
     </PaperProvider>

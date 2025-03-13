@@ -34,22 +34,24 @@ export const styles = StyleSheet.create({
     width: 40,
     backgroundColor: COLORS.grey200,
   },
-  action: {
-    borderRadius: 20,
-    height: 34,
-    width: 42,
-    backgroundColor: COLORS.grey200,
-  },
   iconWrapper: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    overflow: 'visible'
   },
+  badge: {
+    position: 'absolute',
+    zIndex: 2,
+    right: 0,
+    top: 0,
+    backgroundColor: COLORS.error
+  },  
   header: {
     fontFamily: 's-semibold',
     color: COLORS.grey800,
-    flex: 1,
-    textAlign: 'center',
+    paddingHorizontal: 8,
     fontSize: 16
   },
 
@@ -83,7 +85,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8
   },
   weekBtnToday: {
-    backgroundColor: COLORS.teal700,
+    backgroundColor: COLORS.green500,
     paddingVertical: 12,
     paddingHorizontal: 4,
     alignItems: 'center',
@@ -101,9 +103,10 @@ export const styles = StyleSheet.create({
   dateHeader: {
     fontFamily: 's-semibold',
     fontSize: 16,
-    paddingBottom: 8,
-    textAlign: 'center',
-    color: COLORS.grey500
+    padding: 10,
+    paddingHorizontal: 18,
+    color: COLORS.grey600,
+    // backgroundColor: 'blue'
   },
   userSelection: {
     display: 'flex',  
@@ -117,15 +120,15 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   alarms: {
-    paddingHorizontal: 12,
-    position: 'relative'
+    position: 'relative',
+    marginTop: 8,
   },
   linearGradient: {
     position: 'absolute',
-    bottom: -50,
+    bottom: -80,
     left: -12,
     right: -12, 
-    height: 50,
+    height: 80,
     zIndex: 2
   },
   alarmItem: {
@@ -257,9 +260,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.grey100, 
     borderRadius: 8,
   },
-  imgWrapper: {
-
-  },
 
   // Medication
   medicationGrid:{
@@ -340,7 +340,7 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 28,
     padding: 20,
-    
+    overflow: 'hidden'
   },
 
   // Orbital
@@ -362,7 +362,6 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     margin: 4
   },
-
   handleContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -373,9 +372,60 @@ export const styles = StyleSheet.create({
   handle: {
     width: 30,
     height: 4,
-    backgroundColor: COLORS.grey400,
+    backgroundColor: COLORS.grey300,
     borderRadius: 4,
   },
+
+  // Profile
+  avatar: {
+    width: 180,
+    height: 180,
+    backgroundColor: COLORS.grey200,
+    borderWidth: 4,
+    borderRadius: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: COLORS.grey300,
+    alignSelf: 'center'
+  },
+  changeAvatar: {
+    width: 58,
+    height: 58,
+    backgroundColor: COLORS.teal100,
+    borderRadius: 100,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bottom: -4,
+    right: -4,
+    elevation: 5
+  },
+  supportImgs: {
+    width: 68,
+    height: 68,
+    backgroundColor: COLORS.grey200,
+    borderRadius: 100,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: COLORS.grey400,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  chooseColor: {
+    width: (width*0.9)/7,
+    height:(width*0.9)/7,
+    padding: 2,
+    borderRadius: 100,
+    backgroundColor: COLORS.white
+  },
+  chooseAvatar: {
+    width: ((width*0.9)/7*6)/4,
+    height: (width-32)/4,
+    backgroundColor: COLORS.grey200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16
+  }
 
 
 });

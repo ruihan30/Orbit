@@ -19,28 +19,6 @@ export default function Orbital() {
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>
 
-        {/* Top Bar */}
-        <Appbar.Header mode='center-aligned' style={{backgroundColor: COLORS.white}}> 
-          <Appbar.Action style={styles.profile}
-            // icon={() => 
-            //   <View style={styles.iconWrapper}>
-            //     <User size={20} color={COLORS.grey600} weight='bold' />
-            //   </View>
-            // } 
-            icon='account-outline'
-            onPress={() => {}} 
-          />
-          <Text style={styles.header}>My Orbital</Text>
-          <Appbar.Action style={styles.action} 
-            icon={() => 
-              <View style={styles.iconWrapper}>
-                <Bell size={18} color={COLORS.grey800} weight='bold' />
-              </View>
-            } 
-            onPress={() => {}} 
-          />
-        </Appbar.Header>
-
         <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, textAlign: 'center', padding: 8}}>
           Reminders</Text>
         

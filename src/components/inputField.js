@@ -6,7 +6,7 @@ import { TextInput, Menu, Divider } from 'react-native-paper';
 import { CaretDown } from 'phosphor-react-native';
 import { Button } from './button.js';
 
-export const InputField = forwardRef(({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect, required=true }, ref) => {
+export const InputField = forwardRef(({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect, required=true, disabled=false }, ref) => {
   const [visible, setVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
 
@@ -46,7 +46,9 @@ export const InputField = forwardRef(({ placeholder, style, value, dropdown, num
             dropdown ? (
               <TextInput.Icon
                 icon={() => <CaretDown color={COLORS.grey900} size={20} />}
-                onPress={openMenu}
+                onPress={() => {
+                  if (!disabled) openMenu();
+                }}
               />
             ) : null
           }
@@ -57,6 +59,7 @@ export const InputField = forwardRef(({ placeholder, style, value, dropdown, num
           style={{paddingVertical: multiline? 14 : 0}}
           onChangeText={handleChangeText}
           ref={ref}
+          disabled={disabled}
         />
       }
       anchorPosition='bottom'
