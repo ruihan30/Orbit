@@ -30,7 +30,7 @@ const useAuthStore = create(
       fetchUser: async () => {
         const currentUser = auth.currentUser;
         if (!currentUser) {
-          console.error("No authenticated user found.");
+          // console.error("No authenticated user found.");
           return;
         }
 

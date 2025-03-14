@@ -3,18 +3,19 @@ import { useState, useRef, useEffect, useCallback, createElement } from 'react';
 import { Image, View, Text, StyleSheet, Pressable, ScrollView, Alert, Dimensions, BackHandler, Keyboard } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, SegmentedButtons, List, TouchableRipple, Menu, Divider, PaperProvider, Modal, Portal, Snackbar } from 'react-native-paper';
-import { Plus, User, PersonArmsSpread, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint, PencilSimpleLine, X, CaretRight } from 'phosphor-react-native';
+import { Plus, User, PersonArmsSpread, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint, PencilSimpleLine, X, CaretRight, SignOut } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../colors/colors.js';
 import { styles } from '../styles/styles.js';
 import { Button } from '../components/button.js';
 import { InputField } from '../components/inputField.js';
 import useAuthStore from '../store/useAuthStore.js';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
 import BottomSheet, {BottomSheetView, TouchableOpacity} from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import AsyncStorage  from '@react-native-async-storage/async-storage';
 
 export default function Profile() {
   const navigation = useNavigation();
@@ -158,6 +159,23 @@ export default function Profile() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      console.log('before')
+      await signOut(auth); // Wait for sign-out to complete
+      console.log("User logged out");
+  
+      await AsyncStorage.removeItem("@user"); // Clear AsyncStorage
+  
+      useAuthStore.getState().logout(); // Call Zustand's logout function
+      console.log(useAuthStore.getState().isAuthenticated, useAuthStore.getState().user); // Log updated state
+      navigation.navigate('Landing');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   useEffect(() => {
     setDisplayName(user.name);
     setLocalUser(user);
@@ -234,10 +252,20 @@ export default function Profile() {
               />
               <List.Item
                 title="User ID"
-                description={user.uid}
+                description={localUser && localUser.uid}
                 titleStyle={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.grey700}}
                 descriptionStyle={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey500}}
                 style={{backgroundColor: COLORS.grey100}}
+              />
+              <List.Item
+                title="Log Out"
+                titleStyle={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.error}}
+                style={{backgroundColor: COLORS.errorFaded, paddingHorizontal: 16}}
+                left={props => <SignOut color={COLORS.error}/>}
+                onPress={() => {
+                  const auth = getAuth();
+                  handleLogout();
+                }}
               />
             </View>
           

@@ -108,22 +108,6 @@ export default function Home({ onNavigateTo, route }) {
     return `${dayData.date} ${dayData.month} ${dayData.year}, ${dayData.day}`;
   };
 
-  const handleLogout = async () => {
-    try {
-      const auth = getAuth();
-      await signOut(auth); // Wait for sign-out to complete
-      console.log("User logged out");
-  
-      await AsyncStorage.removeItem("@user"); // Clear AsyncStorage
-  
-      useAuthStore.getState().logout(); // Call Zustand's logout function
-      console.log(useAuthStore.getState().isAuthenticated, useAuthStore.getState().user); // Log updated state
-      navigation.navigate('Landing');
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
   const groupAlarmsByDay = (alarms) => {
     const grouped = {};
     if (alarms) {
@@ -243,7 +227,6 @@ export default function Home({ onNavigateTo, route }) {
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
         {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user)}></Button> */}
         <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button>
-        <Button size='small' type='fill' label='Test logout' onPress={() => handleLogout()}></Button>
         
         <ScrollView 
           // stickyHeaderIndices={[2]}
