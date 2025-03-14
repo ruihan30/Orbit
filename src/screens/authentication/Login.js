@@ -15,7 +15,7 @@ import * as WebBrowser from 'expo-web-browser';
 import useAuthStore from '../../store/useAuthStore.js';
 import { app, auth } from '../../utilities/firebaseConfig.js';
 import { db } from '../../utilities/firebaseConfig.js';
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, getDoc, updateDoc } from "firebase/firestore";
 import useMedStore from '../../store/useMedStore.js';
 import useAlarmStore from '../../store/useAlarmStore.js';
 
@@ -85,16 +85,27 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
-      
-      login(user, idToken);
   
       const userDocRef = doc(db, "user", user.uid);
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        email: user.email,
-        name: user.email,
-        createdAt: serverTimestamp(), 
-      });
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          name: user.email,
+          profileIcon: null,
+          profileColor: '',
+          invites: [],
+          connectedUsers: [],
+          createdAt: serverTimestamp(), 
+        });
+      } else {
+        await updateDoc(userDocRef, {
+          lastLogin: serverTimestamp(),
+        });
+      }
+
+      login(user, idToken);
 
       await fetchMedications();
       await fetchAlarms();

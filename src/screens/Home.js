@@ -33,6 +33,7 @@ export default function Home({ onNavigateTo, route }) {
   const [loading, setLoading] = useState(true);
   const { medications, fetchMedications } = useMedStore();
   const { alarms, fetchAlarms, updateAlarm } = useAlarmStore(); 
+  const { fetchUser } = useAuthStore();
   const [groupedAlarms, setGroupedAlarms] = useState(null);
   const [alarmsFetched, setAlarmsFetched] = useState(false); 
 
@@ -193,6 +194,7 @@ export default function Home({ onNavigateTo, route }) {
     useCallback(() => {
       fetchMedications();
       fetchAlarms();
+      fetchUser();
       console.log('focused');
       if (route?.params?.message) {
         console.log('Data received from previous screen:', route.params.message);
@@ -207,6 +209,7 @@ export default function Home({ onNavigateTo, route }) {
       try {
         await fetchMedications();
         await fetchAlarms();
+        await fetchUser();
         setLoading(true);
         console.log('mounted');
       } catch (error) {

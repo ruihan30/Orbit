@@ -1,9 +1,9 @@
 import React from 'react';
-import { useState, useRef, useEffect } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Alert, Dimensions, BackHandler } from 'react-native';
+import { useState, useRef, useEffect, useCallback, createElement } from 'react';
+import { Image, View, Text, StyleSheet, Pressable, ScrollView, Alert, Dimensions, BackHandler, Keyboard } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, SegmentedButtons, List, TouchableRipple, Menu, Divider, PaperProvider, Modal, Portal, Snackbar } from 'react-native-paper';
-import { Plus, User, PersonArmsSpread, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint } from 'phosphor-react-native';
+import { Plus, User, PersonArmsSpread, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint, PencilSimpleLine, X, CaretRight } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../colors/colors.js';
 import { styles } from '../styles/styles.js';
@@ -12,30 +12,43 @@ import { InputField } from '../components/inputField.js';
 import useAuthStore from '../store/useAuthStore.js';
 import { getAuth } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
-import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetView, TouchableOpacity} from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 
 export default function Profile() {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
+  const [localUser, setLocalUser] = useState();
+  const { fetchUser } = useAuthStore();
   const [displayName, setDisplayName] = useState('');
-  const [selectedColor, setSelectedColor] = useState('red');
+  const [selectedColor, setSelectedColor] = useState('grey400');
   const [bgColor, setBgColor] = useState('fadedRed');
-  const [selectedAvatar, setSelectedAvatar] = useState('Rabbit');
-  const [modalVisible, setModalVisible] = useState(false);
-  const testcolor = 'error';
+  const [selectedAvatar, setSelectedAvatar] = useState('User');
+  const [bottomSheetTitle, setBottomSheetTitle] = useState('');
+  const [inviteID, setInviteID] = useState('')
+  const [connectedUsers, setConnectedUsers] = useState();
+
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastMsgColor, setToastMsgColor] = useState();
+  const [toastVisible, setToastVisible] = useState(false);
   
   const bottomSheetRef = useRef(null);
   const { width, height } = Dimensions.get('window');
   
   const RAINBOW = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'];
   const RAINBOW_FADED = ['fadedRed', 'fadedOrange', 'fadedYellow', 'fadedGreen', 'fadedBlue', 'fadedPurple', 'fadedPink'];
-  const ICONS = [Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint];
+  const ICONS = [Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse];
   const ICONS_STRING = ['Rabbit', 'Bird', 'Butterfly', 'Cat', 'Cow', 'Dog', 'FishSimple', 'Horse'];
 
   const openBottomSheet = () => bottomSheetRef.current?.expand();
-  const closeBottomSheet = () => bottomSheetRef.current?.close();
+  const closeBottomSheet = () => {
+    bottomSheetRef.current?.close();
+    Keyboard.dismiss();
+  }
+  const snapPoints = bottomSheetTitle == 'Choose your avatar' ? ["65%"] : ["40%"];
+  const onToggleSnackBar = () => setToastVisible(!toastVisible);
+  const onDismissSnackBar = () => setToastVisible(false);
 
   const shadow = () => {
     return (
@@ -49,228 +62,398 @@ export default function Profile() {
     );
   };
 
+  const handleSheetChanges = useCallback((index) => {
+    console.log('handleSheetChanges', index);
+    if (index == -1) Keyboard.dismiss()
+  }, []);
+
+  const saveDisplay = async (color, icon) => {
+    setLocalUser(prevState => ({
+      ...prevState, 
+      profileColor: color, 
+      profileIcon: icon,   
+    }));
+
+    const userDocRef = doc(db, "user", user.uid);
+
+    try {
+      await updateDoc(userDocRef, {
+        profileIcon: icon,
+        profileColor: color,
+      });
+  
+      console.log("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+    }
+  };
+
+  const saveDisplayName = async (name) => {
+    setLocalUser(prevState => ({
+      ...prevState, 
+      name: name, 
+    }));
+
+    const userDocRef = doc(db, "user", user.uid);
+
+    try {
+      await updateDoc(userDocRef, {
+        name: name,
+      });
+  
+      console.log("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+    }
+  };
+
+  const sendInvite = async (id) => {
+    const userDocRef = doc(db, "user", id);
+
+    try {
+      await updateDoc(userDocRef, {
+        invites: arrayUnion(user.uid)
+      });
+
+      setToastMsg('Invitation sent.');
+      setToastMsgColor('success')
+      onToggleSnackBar();
+
+      console.log("Invite sent successfully!");
+    } catch (error) {
+      // console.error("Error sending invite:", error.message);
+      if (error.message.includes('No document to update')) {
+        setToastMsg('User does not exist, please check the ID entered and try again.');
+        setToastMsgColor('error')
+        onToggleSnackBar();
+        console.log('User does not exist');
+      }
+    }
+  };
+
+  const fetchConnectedUsers = async (connectedUserIds) => {
+    try {
+      const userPromises = connectedUserIds.map(async (userId) => {
+        const userDocRef = doc(db, "user", userId);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          return { 
+            uid: userId, 
+            name: userDoc.data().name, 
+            profileColor: userDoc.data().profileColor, 
+            profileIcon: userDoc.data().profileIcon 
+          };
+        }
+        return null; // If user does not exist, return null
+      });
+  
+      const connectedUsersData = await Promise.all(userPromises);
+  
+      // Filter out any null values (in case some users don't exist)
+      return connectedUsersData.filter(user => user !== null);
+  
+    } catch (error) {
+      console.error("Error fetching connected users:", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
-    setDisplayName(user.email);
+    setDisplayName(user.name);
+    setLocalUser(user);
+    if(user.profileColor) setSelectedColor(user.profileColor);
+    if(user.profileIcon) setSelectedAvatar(user.profileIcon);
+
+    const fetchData = async () => {
+      try {
+        const connectedUsers = await fetchConnectedUsers(user.connectedUsers);
+        setConnectedUsers(connectedUsers);
+        console.log(connectedUsers);
+      } catch (error) {
+        console.error("Error fetching connected users:", error);
+      }
+    };
+  
+    fetchData();
   }, [])
 
   useEffect(() => {
     const index = RAINBOW.indexOf(selectedColor);
     if (index !== -1) {
       setBgColor(RAINBOW_FADED[index]);
+    } else {
+      setBgColor('grey200')
     }
   }, [selectedColor])
   
   return (
     <PaperProvider>
-      <ScrollView style={{backgroundColor: COLORS.white, position: 'relative', padding: 16}}>
-        <Portal>
+      <View style={{backgroundColor: COLORS.white, position: 'relative', padding: 16, flex: 1}}>
+        
+        <ScrollView style={{overflow: 'visible', flex: 1, position: 'relative'}} >
+        
+          {/* Profile pic */}
+          <View style={{width: '100%', gap: 20, paddingVertical: 12}}>
+
+            <Pressable 
+              style={[styles.avatar, {
+                backgroundColor: COLORS[localUser && RAINBOW_FADED[RAINBOW.indexOf(localUser.profileColor)]], 
+                borderColor: COLORS[localUser && localUser.profileColor]
+              }]} 
+              onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
+            >
+
+              {localUser && ICONS_STRING.includes(localUser.profileIcon) ? (
+                React.createElement(ICONS[ICONS_STRING.indexOf(localUser.profileIcon)], {
+                  size: 64,
+                  color: COLORS[localUser.profileColor],
+                  weight: 'regular'
+                })
+              ) : (
+                <User size={64} color={localUser ? COLORS[localUser.profileColor] : COLORS.grey400} weight="regular" />
+              )}
+
+              <Pressable 
+                style={styles.changeAvatar} 
+                onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
+              >
+                <PersonArmsSpread size={28} color={COLORS.green600}/>
+              </Pressable>
+            </Pressable>
+            
+            {/* Details */}
+            <View style={{borderRadius: 16, overflow: 'hidden'}}>
+              <List.Item
+                title="Display Name"
+                description={localUser && localUser.name}
+                titleStyle={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.grey700}}
+                descriptionStyle={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey500}}
+                right={props => <CaretRight color={COLORS.grey700}/>}
+                onPress={() => {setBottomSheetTitle('Edit your display name'); openBottomSheet();}}
+                style={{backgroundColor: COLORS.grey100}}
+              />
+              <List.Item
+                title="User ID"
+                description={user.uid}
+                titleStyle={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.grey700}}
+                descriptionStyle={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey500}}
+                style={{backgroundColor: COLORS.grey100}}
+              />
+            </View>
           
-          <Modal 
-            visible={modalVisible} 
-            onDismiss={() => setModalVisible(false)}
-            // style={{backgroundColor: COLORS.white, marginHorizontal: 16}}
-          >
-            <View style={[styles.modalWrapper, {padding: 0, paddingTop: 12}]}>
-              <View style={{paddingVertical: 12, borderBottomWidth: 1, borderColor: COLORS.grey300}}>
-                <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}>
-                  Choose your avatar
+          </View>
+
+          {/* Support Orbital */}
+          <View style={{paddingVertical: 20, gap: 12}}>
+            <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14}}>Support Orbital</Text>
+            <ScrollView
+              horizontal={true}
+              style={{overflow: 'visible'}}
+            >
+
+              {/* First default */}
+              <View style={{width: 76, gap: 4, marginHorizontal: 2}}>
+                <Pressable style={styles.supportImgs} onPress={() => {openBottomSheet(); setBottomSheetTitle('Add to your Orbital');}}>
+                  <Plus color={COLORS.grey600}/>
+                </Pressable>
+                <Text 
+                  style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}
+                  numberOfLines={1} 
+                  ellipsizeMode="tail" 
+                >
                 </Text>
               </View>
 
-              <View style={styles.flexRow}>
-                <View style={[styles.flexColumn, {gap: 4, padding: 8, justifyContent: 'flex-start', paddingVertical: 12, height: 450}]}>
+              {connectedUsers && connectedUsers.map((connectedUser) => (
+                <View key={connectedUser.uid} style={{width: 76, gap: 4, marginHorizontal: 2}}>
+                  <Pressable 
+                    style={[styles.supportImgs, {
+                      borderWidth: 1.5,
+                      borderColor: COLORS[connectedUser.profileColor],
+                      backgroundColor: COLORS[RAINBOW_FADED[RAINBOW.indexOf(connectedUser.profileColor)]]
+                      }]}>
+                    {ICONS_STRING.includes(connectedUser.profileIcon) ? (
+                      React.createElement(ICONS[ICONS_STRING.indexOf(connectedUser.profileIcon)], {
+                        size: 28,
+                        color: COLORS[connectedUser.profileColor],
+                        weight: 'regular'
+                      })
+                    ) : (
+                      <User color={COLORS.grey600} weight="regular" />
+                    )}
+                  </Pressable>
+                  <Text 
+                    style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}
+                    numberOfLines={1} 
+                    ellipsizeMode="tail" 
+                  >
+                  {connectedUser.name}</Text>
+                </View>
+              ))}
+
+            </ScrollView>
+          </View>
+
+        </ScrollView>
+
+        {/* Toast */}
+        <Snackbar
+          visible={toastVisible}
+          onDismiss={onDismissSnackBar}
+          duration={5000}
+          onIconPress={() => setToastVisible(false)}
+          icon={() => <X size={20} color={COLORS.white} weight='bold' />}
+          style={[styles.snackbar, {backgroundColor: COLORS[toastMsgColor], position: 'absolute', bottom: 20, zIndex: 2}]}
+          wrapperStyle={{width: Dimensions.get("window").width}}
+        >
+          <Text style={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.white}}>
+            {toastMsg}
+          </Text>
+        </Snackbar>
+
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose={true}
+          onChange={handleSheetChanges}
+          style={{ zIndex: 100 }}
+          handleComponent={shadow}
+        >
+          <BottomSheetView style={{flex: 1}}>
+            
+            {/* Title */}
+            <View style={{paddingTop: 8, paddingBottom: 12, borderBottomWidth: 1, borderColor: COLORS.grey300}}>
+              <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}>
+                {bottomSheetTitle}
+              </Text>
+            </View>
+  
+            {bottomSheetTitle == 'Choose your avatar' && (
+              <>
+                <View style={[styles.flexRow, {padding: 8, justifyContent: 'space-between', paddingVertical: 20}]}>
                   {RAINBOW.map((color) => (
-                    <Pressable 
+                    <TouchableOpacity
                       key={color}
                       style={[styles.chooseColor, {
                         borderColor: selectedColor == color ? COLORS[color] : 'transparent',
                         borderWidth: selectedColor == color ? 2 : 0,
                         zIndex: 1000
                       }]}
+                      activeOpacity={1}
                       onPress={() => {setSelectedColor(color); console.log('pressed')}}
                     >
                       <View style={{backgroundColor: COLORS[color], width: '100%', height: '100%', borderRadius: 100}}></View>
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
-
-                <View style={{flexWrap: 'wrap', alignItems: 'flex-start', flexDirection: 'row', flex: 1, gap: 8, justifyContent: 'space-between', padding: 12, height: 450}}>
+    
+                <View style={{flexWrap: 'wrap', alignItems: 'flex-start', flexDirection: 'row'}}>
                   {ICONS.map((Icon, index) => (
-                    <TouchableRipple
+                    <TouchableOpacity
                       key={ICONS_STRING[index]}
                       style={[styles.chooseAvatar, {
-                        backgroundColor: COLORS[bgColor],
+                        backgroundColor: selectedColor !== 'grey400' ? COLORS[bgColor] : COLORS.fadedRed,
                         borderWidth: selectedAvatar === ICONS_STRING[index] ? 2 : 0, 
                         borderColor: selectedAvatar === ICONS_STRING[index] ? COLORS[selectedColor] : 'transparent',
                       }]}
-                      rippleColor={'rgba(51,51,51,0.25)'}
-                      onPress={() => {setSelectedAvatar(ICONS_STRING[index]); console.log('icon: ', ICONS_STRING[index]);}}
-                      borderless={true}
+                      onPress={() => setSelectedAvatar(ICONS_STRING[index])}
+                      activeOpacity={1}
                     >
-                      <Icon size={44} color={COLORS[selectedColor]} weight='regular'/>
-                    </TouchableRipple>
+                      <Icon size={44} color={selectedColor !== 'grey400' ? COLORS[selectedColor] : COLORS.red} weight='regular'/>
+                    </TouchableOpacity>
                   ))}
-
                 </View>
-              </View>
+      
+                <View style={styles.bottomBtns}>
+                  <TouchableOpacity
+                    style={styles.bottomSheetBtns}
+                    onPress={closeBottomSheet}
+                    activeOpacity={1}
+                  >
+                    <Text style={{
+                      fontFamily: 'bg-regular', 
+                      fontSize: 14,
+                      color: COLORS.grey900
+                    }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.bottomSheetBtns, {backgroundColor: COLORS.green600, borderWidth: 0, }]}
+                    onPress={() => {saveDisplay(selectedColor, selectedAvatar); closeBottomSheet()}}
+                    activeOpacity={1}
+                  >
+                    <Text style={{
+                      fontFamily: 'bg-regular', 
+                      fontSize: 14,
+                      color: COLORS.white
+                    }}>Save</Text>
+                  </TouchableOpacity>
+                </View>            
+              </>
+            )}
 
-              <View style={[styles.bottomBtns, {}]}>
-                <Button 
-                  size='large' 
-                  type='outline' 
-                  label='Cancel' 
-                  onPress={() => setModalVisible(false)}
-                  customStyle={{flex: 1}}
-                  rippleColor={'rgba(51,51,51,0.25)'}></Button>
-                <Button 
-                  size='large' 
-                  type='fill' 
-                  label='Save' 
-                  onPress={() => {
-
+            {bottomSheetTitle == 'Add to your Orbital' && (
+              <View style={{padding: 16, flex: 1, gap: 20, justifyContent: 'center'}}>
+                <InputField 
+                  placeholder={'Enter a User ID to send an invite'}  
+                  required={false}
+                  value={inviteID} 
+                  onChangeText={(text) => setInviteID(text)}
+                />
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    width: '100%',
+                    backgroundColor: COLORS.green600,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
-                  customStyle={{flex: 1}}></Button>
+                  onPress={() => {sendInvite(inviteID); closeBottomSheet();}}
+                  activeOpacity={1}
+                >
+                  <Text style={{
+                    fontFamily: 'bg-regular', 
+                    fontSize: 14,
+                    color: COLORS.white
+                  }}>Send an invite</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-            
-          </Modal>
+            )}
 
-        </Portal>
+            {bottomSheetTitle == 'Edit your display name' && (
 
-        {/* Profile pic */}
-        <View style={{width: '100%', padding: 20, gap: 12}}>
-          <Pressable style={styles.avatar} onPress={() => setModalVisible(true)}>
-            
-            <User size={64} color={COLORS.grey400} weight='regular'/>
-            <Pressable style={styles.changeAvatar} onPress={openBottomSheet}>
-              <PersonArmsSpread size={28} color={COLORS.green600}/>
-            </Pressable>
-          </Pressable>
-          
-          <View>
-            <TextInput
-              value={displayName}
-              onChangeText={(text) => setDisplayName(text)}
-              placeholder='Display Name'
-              mode='flat'
-              underlineColor={COLORS.pink800}
-              activeUnderlineColor={COLORS.pink500}
-              underlineStyle={{borderRadius: 20}}
-              contentStyle={{fontFamily: 's-regular', backgroundColor: COLORS.white}}
-              textColor={COLORS.grey600}
-              placeholderTextColor={COLORS.grey450}
-              style={{marginHorizontal: 20}}
-            />
-          </View>
-        </View>
-
-        {/* Support Orbital */}
-
-        <View style={{paddingVertical: 20, gap: 12}}>
-          <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14}}>Support Orbital</Text>
-          <ScrollView
-            horizontal={true}
-            style={{overflow: 'visible'}}
-          >
-            <View style={{width: 76, gap: 4}}>
-              <View style={styles.supportImgs}>
-                <Plus color={COLORS.grey600}/>
+              <View style={{padding: 16, flex: 1, gap: 20, justifyContent: 'center'}}>
+                <InputField 
+                  placeholder={'Enter a User ID to send an invite'}  
+                  required={false}
+                  value={displayName} 
+                  onChangeText={(text) => setDisplayName(text)}
+                />
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    width: '100%',
+                    backgroundColor: COLORS.green600,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onPress={() => {saveDisplayName(displayName); closeBottomSheet();}}
+                  activeOpacity={1}
+                >
+                  <Text style={{
+                    fontFamily: 'bg-regular', 
+                    fontSize: 14,
+                    color: COLORS.white
+                  }}>Save display name</Text>
+                </TouchableOpacity>
               </View>
-              <Text 
-                style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}
-                numberOfLines={1} 
-                ellipsizeMode="tail" 
-              >
-              </Text>
-            </View>
-            
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
-            <View style={styles.supportImgs}></View>
+            )}
 
-          </ScrollView>
-        </View>
-
-      </ScrollView>
-
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={["40%", "80%"]}
-        enablePanDownToClose={true}
-        // onChange={handleSheetChanges}
-        style={{ zIndex: 100 }}
-        handleComponent={shadow}
-        gestureEnabled={false}
-      >
-        <BottomSheetView style= {{flex: 1}}>
-
-          <View style={{paddingTop: 8, paddingBottom: 12, borderBottomWidth: 1, borderColor: COLORS.grey300}}>
-            <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}>
-              Choose your avatar
-            </Text>
-          </View>
-
-          <View style={[styles.flexRow, {gap: 4, padding: 8, justifyContent: 'space-between', paddingTop: 20}]}>
-            {RAINBOW.map((color) => (
-              <Pressable 
-                key={color}
-                style={[styles.chooseColor, {
-                  borderColor: selectedColor == color ? COLORS[color] : 'transparent',
-                  borderWidth: selectedColor == color ? 2 : 0,
-                  zIndex: 1000
-                }]}
-                onPress={() => {setSelectedColor(color); console.log('pressed')}}
-              >
-                <View style={{backgroundColor: COLORS[color], width: '100%', height: '100%', borderRadius: 100}}></View>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={{flexWrap: 'wrap', alignItems: 'flex-start', flexDirection: 'row'}}>
-            {ICONS.map((Icon) => (
-              <TouchableRipple
-                key={Icon}
-                style={[styles.chooseAvatar, {
-                  backgroundColor: COLORS[bgColor],
-                  
-                }]}
-                rippleColor={'rgba(51,51,51,0.25)'}
-                onPress={() => {console.log('select avatar')}}
-                borderless={true}
-              >
-                <Icon size={44} color={COLORS[selectedColor]} weight='regular'/>
-              </TouchableRipple>
-            ))}
-
-          </View>
-
-
-
-          <View style={[styles.bottomBtns, {}]}>
-            <Button 
-              size='large' 
-              type='outline' 
-              label='Cancel' 
-              onPress={closeBottomSheet}
-              customStyle={{flex: 1}}
-              rippleColor={'rgba(51,51,51,0.25)'}></Button>
-            <Button 
-              size='large' 
-              type='fill' 
-              label='Save' 
-              onPress={() => {
-
-              }}
-              customStyle={{flex: 1}}></Button>
-          </View>
-
-        </BottomSheetView>
-      </BottomSheet>
+          </BottomSheetView>
+        </BottomSheet>
+      </View>
     </PaperProvider>
   );
 }

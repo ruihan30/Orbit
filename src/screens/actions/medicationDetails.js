@@ -291,7 +291,7 @@ export default function MedicationDetails({ route }) {
       <View style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
 
         {/* Modals */}
-        <Portal>
+        <Portal> 
           
           <Modal visible={calendarPickerVisible} onDismiss={() => setcalendarPickerVisible(false)}>
             {calendarPickerVisible &&

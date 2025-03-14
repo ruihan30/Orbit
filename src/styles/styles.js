@@ -419,12 +419,21 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white
   },
   chooseAvatar: {
-    width: ((width*0.9)/7*6)/4,
-    height: (width-32)/4,
+    width: width/4,
+    height: width/4,
     backgroundColor: COLORS.grey200,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16
+  },
+  bottomSheetBtns: {
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.grey350,
+    width: (width-28)/2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1
   }
 
 

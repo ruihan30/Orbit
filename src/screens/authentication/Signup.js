@@ -87,6 +87,10 @@ export default function Signup() {
         uid: user.uid,
         email: user.email,
         name: user.email,
+        profileIcon: null,
+        profileColor: '',
+        invites: [],
+        connectedUsers: [],
         createdAt: serverTimestamp(), 
       });
   

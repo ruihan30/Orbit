@@ -277,6 +277,7 @@ export default function AlarmDetails({ route }) {
   return (
     <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
 
+      {/* Header */}
       <View style={[styles.flexRow, {paddingVertical: 8, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: COLORS.grey300, marginBottom: 12, zIndex: 2, backgroundColor: COLORS.white, justifyContent: 'flex-end'}]}>
         <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, flex: 1}}>
           Alarm Details
@@ -378,7 +379,7 @@ export default function AlarmDetails({ route }) {
               title="Ring Tone"
               description={alarmDetails.ringtone.name}
               titleStyle={{fontFamily: 'bg-medium', fontSize: 16, color: COLORS.grey700}}
-              descriptionStyle={{fontFamily: 'bg-regualr', fontSize: 14, color: COLORS.grey500}}
+              descriptionStyle={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey500}}
               right={props => <CaretRight color={COLORS.grey700}/>}
               onPress={() => {setBottomSheetTitle('Select ring tone'); openBottomSheet(); }}
               style={{backgroundColor: COLORS.grey100}}
