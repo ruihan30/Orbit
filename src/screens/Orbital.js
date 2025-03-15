@@ -13,36 +13,66 @@ export default function Orbital() {
     { id: '2', title: 'Diet', message: 'Avoid oily and greasy food, more protein', user: 'Xiao Ming', color: COLORS.fadedOrange },
     { id: '3', title: 'Exercise', message: '30-minute walk in the park', user: 'David', color: COLORS.fadedGreen },
     { id: '4', title: 'Hydration', message: 'Drink at least 8 glasses of water today', user: 'Priya', color: COLORS.fadedYellow },
+    { id: '5', title: 'Diet', message: 'Avoid oily and greasy food, more protein', user: 'Xiao Ming', color: COLORS.fadedOrange },
+    { id: '6', title: 'Exercise', message: '30-minute walk in the park', user: 'David', color: COLORS.fadedGreen },
+    { id: '7', title: 'Hydration', message: 'Drink at least 8 glasses of water today', user: 'Priya', color: COLORS.fadedYellow },
   ];
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
-      <GestureHandlerRootView>
 
-        <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, textAlign: 'center', padding: 8}}>
-          Reminders</Text>
+      {/* <View style={[styles.flexRow, {padding: 16, gap: 8, alignItems: 'center', justifyContent: 'center'}]}>
+        <View style={styles.profileImg}></View>
+        <View style={styles.profileImg}></View>
+        <View style={styles.profileImg}></View>
+        <View style={styles.profileImg}></View>
+        <View style={styles.profileImg}></View>
+      </View>
         
-        {/* Reminder Board */}
-        <View style={[styles.flexRow, {flex: 1, alignItems: 'start'}]}>
-          <View style={{paddingVertical: 12, paddingHorizontal: 12, gap: 8}}>
+      <View style={[styles.reminderBoard, {flex: 1, alignItems: 'start'}]}>
+        <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, textAlign: 'center', paddingVertical: 8, borderBottomWidth: 1, borderColor: COLORS.grey200}}>
+        Reminders</Text>
+
+        <MasonryList
+          data={DATA}
+          keyExtractor={(item) => item.id}
+          numColumns={2} 
+          renderItem={({ item }) => <GridItem item={item} />}
+          contentContainerStyle={{padding: 4}}
+        />
+        
+      </View> */}
+        
+      <View style={[styles.reminderBoard, {flex: 1, alignItems: 'start'}]}>
+        <View style={[styles.flexRow, {paddingVertical: 10, paddingHorizontal: 4, position: 'absolute', top: 8, left: 6, right: 6, zIndex: 2, backgroundColor: COLORS.bg, borderRadius: 20, }]}>
+          <View style={{gap: 4, width: 64, alignItems: 'center', paddingHorizontal: 4}}>
             <View style={styles.profileImg}></View>
-            <View style={styles.profileImg}></View>
-            <View style={styles.profileImg}></View>
-            <View style={styles.profileImg}></View>
-            <View style={styles.profileImg}></View>
+            <Text style={{fontSize: 12}} numberOfLines={1} ellipsizeMode="tail" >asdasdas</Text>
           </View>
 
-          <MasonryList
-            data={DATA}
-            keyExtractor={(item) => item.id}
-            numColumns={2} 
-            renderItem={({ item }) => <GridItem item={item} />}
-            contentContainerStyle={styles.reminderBoard}
-          />
+          <View style={{gap: 4, width: 64, alignItems: 'center', paddingHorizontal: 4}}>
+            <View style={styles.profileImg}></View>
+            <Text style={{fontSize: 12}} numberOfLines={1} ellipsizeMode="tail" >asdasdasdasd</Text>
+          </View>
           
         </View>
 
-      </GestureHandlerRootView>
+        <MasonryList
+          data={DATA}
+          keyExtractor={(item) => item.id}
+          numColumns={2} 
+          renderItem={({ item }) => <GridItem item={item} />}
+          contentContainerStyle={{padding: 6, paddingTop: 100}}
+        />
+
+
+        
+      </View>
+
+      
+
+      
+
     </SafeAreaProvider>
   );
 }

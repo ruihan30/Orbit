@@ -353,8 +353,10 @@ export const styles = StyleSheet.create({
   reminderBoard: {
     backgroundColor: COLORS.white,
     flex: 1,
-    borderTopLeftRadius: 24,
-    padding: 8,
+    position: 'relative'
+    // borderTopLeftRadius: 28,
+    // borderTopRightRadius: 28,
+    // padding: 8,
   },
   reminderCard: {
     padding: 10,
@@ -391,14 +393,14 @@ export const styles = StyleSheet.create({
   changeAvatar: {
     width: 58,
     height: 58,
-    backgroundColor: COLORS.teal100,
+    backgroundColor: COLORS.grey100,
     borderRadius: 100,
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
     bottom: -4,
     right: -4,
-    elevation: 5
+    elevation: 10
   },
   supportImgs: {
     width: 68,

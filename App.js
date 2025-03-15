@@ -26,6 +26,7 @@ import Medication from './src/screens/Medication.js';
 import Orbital from './src/screens/Orbital.js';
 import CareBot from './src/screens/CareBot.js';
 import Profile from './src/screens/Profile.js';
+import Notifications from './src/screens/Notifications.js';
 import Login from './src/screens/authentication/Login';
 import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
@@ -123,7 +124,20 @@ export default function App() {
                   <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
                   <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
                   <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
-                  <Stack.Screen name="Profile" component={Profile} options={{ header: (props) => <TopBar title='Profile' left={true}/>}}/>
+                  <Stack.Screen 
+                    name="Profile" 
+                    component={Profile} 
+                    options={{ 
+                      header: (props) => <TopBar title='Profile' left={true}/>,
+                      animation: "slide_from_right",
+                    }}/>
+                  <Stack.Screen 
+                    name="Notifications" 
+                    component={Notifications} 
+                    options={{ 
+                      header: (props) => <TopBar title='Notifications' left={true}/>,
+                      animation: "slide_from_right",
+                    }}/>
                 </Stack.Navigator>
               </NavigationContainer>
           </GestureHandlerRootView>

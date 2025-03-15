@@ -176,9 +176,9 @@ export default function Home({ onNavigateTo, route }) {
   // when focused
   useFocusEffect(
     useCallback(() => {
+      fetchUser();
       fetchMedications();
       fetchAlarms();
-      fetchUser();
       console.log('focused');
       if (route?.params?.message) {
         console.log('Data received from previous screen:', route.params.message);
@@ -191,9 +191,9 @@ export default function Home({ onNavigateTo, route }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        await fetchUser();
         await fetchMedications();
         await fetchAlarms();
-        await fetchUser();
         setLoading(true);
         console.log('mounted');
       } catch (error) {
@@ -226,7 +226,7 @@ export default function Home({ onNavigateTo, route }) {
         {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
         {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user)}></Button> */}
-        <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button>
+        {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button> */}
         
         <ScrollView 
           // stickyHeaderIndices={[2]}

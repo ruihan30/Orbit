@@ -14,28 +14,28 @@ import { getAuth, signOut } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
 import BottomSheet, {BottomSheetView, TouchableOpacity} from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
-import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import AsyncStorage  from '@react-native-async-storage/async-storage';
 
 export default function Profile() {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
   const [localUser, setLocalUser] = useState();
-  const { fetchUser } = useAuthStore();
-  const [displayName, setDisplayName] = useState('');
-  const [selectedColor, setSelectedColor] = useState('grey400');
-  const [bgColor, setBgColor] = useState('fadedRed');
-  const [selectedAvatar, setSelectedAvatar] = useState('User');
-  const [bottomSheetTitle, setBottomSheetTitle] = useState('');
-  const [inviteID, setInviteID] = useState('')
-  const [connectedUsers, setConnectedUsers] = useState();
 
   const [toastMsg, setToastMsg] = useState('');
   const [toastMsgColor, setToastMsgColor] = useState();
   const [toastVisible, setToastVisible] = useState(false);
   
+  const [bottomSheetTitle, setBottomSheetTitle] = useState('');
   const bottomSheetRef = useRef(null);
   const { width, height } = Dimensions.get('window');
+
+  const [displayName, setDisplayName] = useState('');
+  const [selectedColor, setSelectedColor] = useState('grey400');
+  const [bgColor, setBgColor] = useState('fadedRed');
+  const [selectedAvatar, setSelectedAvatar] = useState('User');
+  const [inviteID, setInviteID] = useState('')
+  const [connectedUsers, setConnectedUsers] = useState();
   
   const RAINBOW = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'];
   const RAINBOW_FADED = ['fadedRed', 'fadedOrange', 'fadedYellow', 'fadedGreen', 'fadedBlue', 'fadedPurple', 'fadedPink'];
@@ -110,10 +110,35 @@ export default function Profile() {
 
   const sendInvite = async (id) => {
     const userDocRef = doc(db, "user", id);
+    const timeStamp = new Date();
 
     try {
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        // If the user document doesn't exist, handle the error
+        setToastMsg('User does not exist, please check the ID entered and try again.');
+        setToastMsgColor('error');
+        onToggleSnackBar();
+        console.log('User does not exist');
+        return;
+      }
+
+      const userData = userDoc.data();
+
+      if (userData.connectedUsers && userData.connectedUsers.includes(user.uid)) {
+        setToastMsg('You are already connected with this user.');
+        setToastMsgColor('error');
+        onToggleSnackBar();
+        console.log('User is already connected');
+        return;
+      }
+      
       await updateDoc(userDocRef, {
-        invites: arrayUnion(user.uid)
+        invites: arrayUnion({
+          uid: user.uid,
+          name: user.name,
+          sentAt: timeStamp,
+        })
       });
 
       setToastMsg('Invitation sent.');
@@ -122,7 +147,7 @@ export default function Profile() {
 
       console.log("Invite sent successfully!");
     } catch (error) {
-      // console.error("Error sending invite:", error.message);
+      console.error("Error sending invite:", error.message);
       if (error.message.includes('No document to update')) {
         setToastMsg('User does not exist, please check the ID entered and try again.');
         setToastMsgColor('error')
@@ -154,7 +179,7 @@ export default function Profile() {
       return connectedUsersData.filter(user => user !== null);
   
     } catch (error) {
-      console.error("Error fetching connected users:", error);
+      // console.error("Error fetching connected users:", error);
       return [];
     }
   };
@@ -235,7 +260,7 @@ export default function Profile() {
                 style={styles.changeAvatar} 
                 onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
               >
-                <PersonArmsSpread size={28} color={COLORS.green600}/>
+                <PersonArmsSpread size={28} color={COLORS.grey500}/>
               </Pressable>
             </Pressable>
             

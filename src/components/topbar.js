@@ -17,13 +17,13 @@ export const TopBar = ({ title, left=false }) => {
     > 
       {left && (
         <Appbar.Action
-        icon={() => 
-          <View style={styles.iconWrapper}>
-            <ArrowLeft size={24} color={COLORS.grey700} weight='regular' />
-          </View>
-        } 
-        onPress={() => navigation.goBack()} 
-      />
+          icon={() => 
+            <View style={styles.iconWrapper}>
+              <ArrowLeft size={24} color={COLORS.grey700} weight='regular' />
+            </View>
+          } 
+          onPress={() => navigation.goBack()} 
+        />
       )}
 
       <Appbar.Content 
@@ -52,7 +52,7 @@ export const TopBar = ({ title, left=false }) => {
                 <Bell size={24} color={COLORS.grey700} weight='regular' />
               </View>
             } 
-            onPress={() => {}} 
+            onPress={() => navigation.navigate('Notifications')} 
           />
         </>
       )}
