@@ -97,6 +97,7 @@ export default function Login() {
           profileColor: '',
           invites: [],
           connectedUsers: [],
+          reminders: [],
           createdAt: serverTimestamp(), 
         });
       } else {

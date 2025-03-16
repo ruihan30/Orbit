@@ -35,8 +35,8 @@ export const NavBar = () => {
     {
       key: 'home',
       title: 'Home',
-      focusedIcon: <House weight="fill" color={COLORS.green600} size={28}/>,  // For focused state
-      unfocusedIcon: <House weight="regular" color={COLORS.grey500} size={28}/> // For unfocused state
+      focusedIcon: <House weight="fill" color={COLORS.green600} size={28}/>,  
+      unfocusedIcon: <House weight="regular" color={COLORS.grey500} size={28}/> 
     },
     {
       key: 'medication',
@@ -44,12 +44,6 @@ export const NavBar = () => {
       focusedIcon: <Pill weight="fill" color={COLORS.green600} size={28} />, 
       unfocusedIcon: <Pill weight="regular" color={COLORS.grey500} size={28}/>
     },
-    // {
-    //   key: 'add',
-    //   title: 'Add',
-    //   focusedIcon: <Plus weight="fill" color={COLORS.teal700} size={28}/>, 
-    //   unfocusedIcon: <Plus weight="regular" color={COLORS.grey500} size={28}/>
-    // },
     {
       key: 'orbital',
       title: 'Orbital',
@@ -112,7 +106,16 @@ export const NavBar = () => {
           {
             icon: 'account-heart',
             label: 'Orbital',
-            onPress: () => console.log('Pressed star'),
+            onPress: () => navigation.navigate('Profile'),
+            size:'medium',
+            color: COLORS.grey800,
+            labelStyle: styles.label,
+            style: styles.backgroundColor
+          },
+          {
+            icon: 'note-text',
+            label: 'Reminder',
+            onPress: () => navigation.navigate('ReminderDetails'),
             size:'medium',
             color: COLORS.grey800,
             labelStyle: styles.label,

@@ -26,54 +26,9 @@ export default function Notifications() {
   const [toastMsg, setToastMsg] = useState('');
   const [toastMsgColor, setToastMsgColor] = useState();
   const [toastVisible, setToastVisible] = useState(false);
-  
-  const [bottomSheetTitle, setBottomSheetTitle] = useState('');
-  const bottomSheetRef = useRef(null);
-  const { width, height } = Dimensions.get('window');
 
-  const openBottomSheet = () => bottomSheetRef.current?.expand();
-  const closeBottomSheet = () => {
-    bottomSheetRef.current?.close();
-    Keyboard.dismiss();
-  }
-  const snapPoints = bottomSheetTitle == 'Choose your avatar' ? ["65%"] : ["40%"];
   const onToggleSnackBar = () => setToastVisible(!toastVisible);
   const onDismissSnackBar = () => setToastVisible(false);
-
-  const shadow = () => {
-    return (
-      <Shadow
-        sides={{top: true, bottom: false, start: false, end: false}}
-        style={{width: width, overflow: 'hidden'}}>
-        <View style={styles.handleContainer}>
-          <View style={styles.handle} />
-        </View>
-      </Shadow>
-    );
-  };
-
-  const handleSheetChanges = useCallback((index) => {
-    console.log('handleSheetChanges', index);
-    if (index == -1) Keyboard.dismiss()
-  }, []);
-
-  const test = async (id) => {
-    const userDocRef = doc(db, "user", user.uid);
-
-    try {
-      // const userDoc = await getDoc(userDocRef);
-      // const userData = userDoc.data();
-      // const updatedInvites = userData.invites.filter(invite => invite.uid !== id);
-
-      await updateDoc(userDocRef, { 
-        connectedUsers: arrayUnion('asdnaonshciun')
-       });
-  
-      console.log("Invites updated successfully!");
-    } catch (error) {
-      console.error("Error updating invites:", error.message);
-    }
-  }
 
   const acceptInvite = async (id) => {
     const userDocRef = doc(db, "user", user.uid);
@@ -167,27 +122,6 @@ export default function Notifications() {
           </Text>
         </Snackbar>
 
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
-          onChange={handleSheetChanges}
-          style={{ zIndex: 100 }}
-          handleComponent={shadow}
-        >
-          <BottomSheetView style={{flex: 1}}>
-            
-            {/* Title */}
-            <View style={{paddingTop: 8, paddingBottom: 12, borderBottomWidth: 1, borderColor: COLORS.grey300}}>
-              <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}>
-                {bottomSheetTitle}
-              </Text>
-            </View>
-
-          
-          </BottomSheetView>
-        </BottomSheet>
       </View>
     </PaperProvider>
   );

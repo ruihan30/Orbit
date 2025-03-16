@@ -91,6 +91,7 @@ export default function Signup() {
         profileColor: '',
         invites: [],
         connectedUsers: [],
+        reminders: [],
         createdAt: serverTimestamp(), 
       });
   

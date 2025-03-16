@@ -70,29 +70,6 @@ export default function CareBot() {
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
-      <GestureHandlerRootView>
-
-        {/* Top Bar */}
-        <Appbar.Header mode='center-aligned' style={{backgroundColor: COLORS.white}}> 
-          <Appbar.Action style={styles.profile}
-            // icon={() => 
-            //   <View style={styles.iconWrapper}>
-            //     <User size={20} color={COLORS.grey600} weight='bold' />
-            //   </View>
-            // } 
-            icon='account-outline'
-            onPress={() => {}} 
-          />
-          <Text style={styles.header}>My Orbital</Text>
-          <Appbar.Action style={styles.action} 
-            icon={() => 
-              <View style={styles.iconWrapper}>
-                <Bell size={18} color={COLORS.grey800} weight='bold' />
-              </View>
-            } 
-            onPress={() => {}} 
-          />
-        </Appbar.Header>
 
         <View>
           <TextInput
@@ -107,8 +84,6 @@ export default function CareBot() {
           {response ? <Text>{response.message.content[0].text}</Text> : null}
         </View>
 
-
-      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }

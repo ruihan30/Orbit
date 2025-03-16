@@ -345,24 +345,24 @@ export const styles = StyleSheet.create({
 
   // Orbital
   profileImg: {
-    width: 48,
-    height: 48,
-    backgroundColor: COLORS.grey300,
+    width: 60,
+    height: 60,
+    backgroundColor: COLORS.grey200,
     borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // borderWidth: 1,
+    // borderColor: COLORS.grey400
   },
   reminderBoard: {
-    backgroundColor: COLORS.white,
     flex: 1,
-    position: 'relative'
-    // borderTopLeftRadius: 28,
-    // borderTopRightRadius: 28,
-    // padding: 8,
+    position: 'relative',
   },
   reminderCard: {
-    padding: 10,
-    gap: 20,
-    borderRadius: 16,
-    margin: 4
+    padding: 12,
+    gap: 32,
+    margin: 8,
+    elevation: 2,
   },
   handleContainer: {
     alignItems: 'center',
@@ -383,11 +383,9 @@ export const styles = StyleSheet.create({
     width: 180,
     height: 180,
     backgroundColor: COLORS.grey200,
-    borderWidth: 4,
     borderRadius: 200,
     alignItems: 'center',
     justifyContent: 'center',
-    borderColor: COLORS.grey300,
     alignSelf: 'center'
   },
   changeAvatar: {
@@ -408,8 +406,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.grey200,
     borderRadius: 100,
     marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: COLORS.grey400,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -436,6 +432,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1
+  },
+
+  // Reminder Details
+  editReminder: {
+    backgroundColor: COLORS.grey300,
+    padding: 16,
+    gap: 8,
+    elevation: 2
   }
 
 

@@ -32,6 +32,7 @@ import Signup from './src/screens/authentication/Signup';
 import Landing from './src/screens/authentication/Landing';
 import AlarmDetails from './src/screens/actions/alarmDetails.js';
 import MedicationDetails from './src/screens/actions/medicationDetails.js';
+import ReminderDetails from './src/screens/actions/reminderDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -122,8 +123,15 @@ export default function App() {
                   <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                   <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
                   <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
-                  <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false }}/>
-                  <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false }}/>
+                  <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
+                  <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
+                  <Stack.Screen 
+                    name="ReminderDetails" 
+                    component={ReminderDetails} 
+                    options={{ 
+                      header: (props) => <TopBar title='Reminder' left={true}/>, 
+                      animation: "slide_from_bottom" 
+                    }}/>
                   <Stack.Screen 
                     name="Profile" 
                     component={Profile} 

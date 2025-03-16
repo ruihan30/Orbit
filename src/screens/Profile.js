@@ -170,12 +170,11 @@ export default function Profile() {
             profileIcon: userDoc.data().profileIcon 
           };
         }
-        return null; // If user does not exist, return null
+        return null;
       });
   
       const connectedUsersData = await Promise.all(userPromises);
   
-      // Filter out any null values (in case some users don't exist)
       return connectedUsersData.filter(user => user !== null);
   
     } catch (error) {
@@ -241,7 +240,6 @@ export default function Profile() {
             <Pressable 
               style={[styles.avatar, {
                 backgroundColor: COLORS[localUser && RAINBOW_FADED[RAINBOW.indexOf(localUser.profileColor)]], 
-                borderColor: COLORS[localUser && localUser.profileColor]
               }]} 
               onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
             >
@@ -306,8 +304,11 @@ export default function Profile() {
 
               {/* First default */}
               <View style={{width: 76, gap: 4, marginHorizontal: 2}}>
-                <Pressable style={styles.supportImgs} onPress={() => {openBottomSheet(); setBottomSheetTitle('Add to your Orbital');}}>
-                  <Plus color={COLORS.grey600}/>
+                <Pressable 
+                  style={[styles.supportImgs, {borderWidth: 1, borderColor: COLORS.grey400}]} 
+                  onPress={() => {openBottomSheet(); setBottomSheetTitle('Add to your Orbital');}}
+                >
+                  <Plus color={COLORS.grey700}/>
                 </Pressable>
                 <Text 
                   style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}
@@ -321,18 +322,16 @@ export default function Profile() {
                 <View key={connectedUser.uid} style={{width: 76, gap: 4, marginHorizontal: 2}}>
                   <Pressable 
                     style={[styles.supportImgs, {
-                      borderWidth: 1.5,
-                      borderColor: COLORS[connectedUser.profileColor],
                       backgroundColor: COLORS[RAINBOW_FADED[RAINBOW.indexOf(connectedUser.profileColor)]]
                       }]}>
                     {ICONS_STRING.includes(connectedUser.profileIcon) ? (
-                      React.createElement(ICONS[ICONS_STRING.indexOf(connectedUser.profileIcon)], {
+                      createElement(ICONS[ICONS_STRING.indexOf(connectedUser.profileIcon)], {
                         size: 28,
                         color: COLORS[connectedUser.profileColor],
                         weight: 'regular'
                       })
                     ) : (
-                      <User color={COLORS.grey600} weight="regular" />
+                      <User color={COLORS.grey700} weight="regular" />
                     )}
                   </Pressable>
                   <Text 
