@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { COLORS } from '../colors/colors.js';
@@ -11,34 +11,74 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import useAuthStore from '../store/useAuthStore.js';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
 import { db } from '../utilities/firebaseConfig.js';
 import { useFocusEffect } from '@react-navigation/native'; 
 import useMedStore from '../store/useMedStore.js';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { Shadow } from 'react-native-shadow-2';
 
 export default function Medication() {
   const navigation = useNavigation();
   const [boxWidth, setBoxWidth] = useState(null);
-  
+  const { user } = useAuthStore();
   const { medications, fetchMedications } = useMedStore();
+  const [localMedications, setLocalMedications] = useState();
+  const [deletedMedication, setDeletedMedication] = useState();
+
+  const bottomSheetRef = useRef(null);
+  const { width, height } = Dimensions.get('window');
+
+  const openBottomSheet = () => bottomSheetRef.current?.expand();
+  const closeBottomSheet = () => bottomSheetRef.current?.close();
+
+  const shadow = () => {
+    return (
+      <Shadow
+        sides={{top: true, bottom: false, start: false, end: false}}
+        style={{width: width, overflow: 'hidden'}}>
+        <View style={styles.handleContainer}>
+          <View style={styles.handle} />
+        </View>
+      </Shadow>
+    );
+  };
+
+  const handleSheetChanges = useCallback((index) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+
+  const deleteMedication = async (medication) => {
+    setLocalMedications((prevMedications) => prevMedications.filter(med => med.id !== medication.id));
+    try {
+      const medicationDocRef = doc(db, "user", user.uid, "medications", medication.id);
+      await deleteDoc(medicationDocRef);
+      console.log("Medication deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting medication:", error.message);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
       fetchMedications();
-      console.log('focused')
+      setLocalMedications(medications);
+      console.log('focused');
     }, [])
   );
 
   useEffect(() => {
     fetchMedications();
+    setLocalMedications(medications);
+    console.log('useEffect')
   }, [])
 
   return (
     <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
       <GestureHandlerRootView>
 
-        {/* <Button size='small' type='fill' label='Test' onPress={() => {console.log(boxWidth)}}></Button> */}
+        {/* <Button size='small' type='fill' label='Test' onPress={() => {console.log(localMedications)}}></Button> */}
 
         <ScrollView 
           showsVerticalScrollIndicator={false} 
@@ -68,13 +108,14 @@ export default function Medication() {
             </View>
           </TouchableRipple>
                 
-          {medications?.length > 0 ? (
-            medications.map((med) => (
+          {localMedications?.length > 0 ? (
+            localMedications.map((med) => (
               <TouchableRipple 
                 key={med.id}
                 style={styles.medicationRipple} 
                 rippleColor={'rgba(51,51,51,0.25)'}
                 onPress={() => navigation.navigate('MedicationDetails', { medication: med })}
+                onLongPress={() => {openBottomSheet(); setDeletedMedication(med); console.log(med)}}
                 borderless={true}
               >
                 <View style={{gap: 8}}>
@@ -133,6 +174,40 @@ export default function Medication() {
           )}
 
         </ScrollView>
+
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={['20%', '40%']}
+          enablePanDownToClose={true}
+          onChange={handleSheetChanges}
+          style={{ zIndex: 100 }}
+          handleComponent={shadow}
+        >
+          <BottomSheetView style={{flex: 1}}>
+            {/* Title */}
+            <View style={{paddingTop: 8, paddingBottom: 12, borderBottomWidth: 1, borderColor: COLORS.grey300}}>
+              <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 14, textAlign: 'center'}}>
+                Delete medication?
+              </Text>
+            </View>
+            <View style={{padding: 20, gap: 12}}>
+              <Text style={{fontFamily: 'bg-regular', fontSize: 16, textAlign: 'center', color: COLORS.grey500}}>
+                Are you sure you want to delete this medication? This action cannot be undone.
+              </Text>
+              <Button 
+                size='large' 
+                type='fill' 
+                label='Delete post' 
+                onPress={() => {
+                  deleteMedication(deletedMedication);
+                  closeBottomSheet();
+                }}
+                fillColor={COLORS.error}
+              ></Button>
+            </View>
+          </BottomSheetView>
+        </BottomSheet>
 
       </GestureHandlerRootView>
     </SafeAreaProvider>

@@ -361,8 +361,9 @@ export const styles = StyleSheet.create({
   reminderCard: {
     padding: 12,
     gap: 32,
-    margin: 8,
-    elevation: 2,
+    margin: 6,
+    borderWidth: 0.5,
+    borderColor: COLORS.grey200
   },
   handleContainer: {
     alignItems: 'center',

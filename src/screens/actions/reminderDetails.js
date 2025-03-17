@@ -23,11 +23,12 @@ import { db } from '../../utilities/firebaseConfig.js';
 export default function ReminderDetails({ route }) {
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
+  const { post } = route.params || {};
   const [connectedUsers, setConnectedUsers] = useState();
-  const [selectedColor, setSelectedColor] = useState('fadedRed');
-  const [title, setTitle] = useState(route.title);
-  const [message, setMessage] = useState(route.message);
-  const [selectedRecipient, setSelectedRecipient] = useState('Myself');
+  const [selectedColor, setSelectedColor] = useState(post ? post.postColor : 'fadedRed');
+  const [title, setTitle] = useState(post ? post.title : '');
+  const [message, setMessage] = useState(post ? post.message : '');
+  const [selectedRecipient, setSelectedRecipient] = useState(post ? post.recipientName : 'Myself');
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
@@ -94,7 +95,7 @@ export default function ReminderDetails({ route }) {
     const timeStamp = new Date();
 
     try {  
-      if (selectedRecipient == 'Myself') {
+      if ((selectedRecipient == 'Myself') || (selectedRecipient == user.name)) {
         await updateDoc(userDocRef, {
           reminders: arrayUnion({
             recipient: user.uid,
@@ -141,6 +142,37 @@ export default function ReminderDetails({ route }) {
     }
   };
 
+  const updateReminder = async () => {
+    const userDocRef = doc(db, "user", user.uid); 
+  
+    try {
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        let reminders = userDoc.data().reminders || [];
+  
+        const updatedReminders = reminders.map((reminder) =>
+          reminder.postedAt.seconds === post.postedAt.seconds 
+            ? { 
+              ...reminder, 
+              title: title || reminder.title, 
+              message: message || reminder.message, 
+              postColor: selectedColor || reminder.postColor 
+             } 
+            : reminder
+        );
+  
+        await updateDoc(userDocRef, {
+          reminders: updatedReminders,
+        });
+  
+        console.log("Reminder updated successfully!");
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error updating reminder:", error.message);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -166,6 +198,7 @@ export default function ReminderDetails({ route }) {
   return (
     <PaperProvider>
       <View style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
+        {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(post)}></Button> */}
 
         {/* Modals */}
         <Portal> 
@@ -179,7 +212,12 @@ export default function ReminderDetails({ route }) {
 
               <View style={[styles.flexRow, {gap: 4}]}>
                 <Button size='small' type='outline' label='Go Back' onPress={() => setSaveVisible(false)} customStyle={{flex: 1}}></Button>
-                <Button size='small' type='fill' label='Post Reminder' onPress={() => postReminder(selectedRecipient)} customStyle={{flex: 1}}></Button>
+                <Button size='small' type='fill' label='Post Reminder' 
+                  onPress={() => {
+                    if (!post) postReminder(selectedRecipient)
+                    else updateReminder();
+                  }} 
+                  customStyle={{flex: 1}}></Button>
               </View>
             </View>
           </Modal>

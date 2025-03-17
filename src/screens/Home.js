@@ -219,8 +219,8 @@ export default function Home({ onNavigateTo, route }) {
       <GestureHandlerRootView>
 
         {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
-        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button>
-        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button> */}
+        <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button>
         {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
         {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
         {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(user)}></Button> */}

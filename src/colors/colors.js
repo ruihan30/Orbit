@@ -61,9 +61,9 @@ export const COLORS = {
 
   // rainbow
   fadedRed: '#FBEDED',
-  fadedOrange: '#FDECDE',
+  fadedOrange: '#FEF1E6',
   fadedYellow: '#FDF6E2',
-  fadedGreen: '#E4F5E6',
+  fadedGreen: '#EBF7EC',
   fadedBlue: '#E7F1FE',
   fadedPurple: '#F1F0FC',
   fadedPink: '#F5E9F8',

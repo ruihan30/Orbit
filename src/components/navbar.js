@@ -101,7 +101,7 @@ export const NavBar = () => {
       <FAB.Group
         open={open}
         visible={fabVisible}
-        icon={open ? 'window-close' : 'plus'}
+        icon={open ? 'close' : 'plus'}
         actions={[
           {
             icon: 'account-heart',
