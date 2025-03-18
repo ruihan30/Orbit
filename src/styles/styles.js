@@ -117,7 +117,8 @@ export const styles = StyleSheet.create({
     padding: 8,
     paddingRight: 16,
     borderRadius: 24,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    flex: 1
   },
   alarms: {
     position: 'relative',

@@ -81,6 +81,7 @@ export default function App() {
     }
   }
 
+  // Check local user
   useEffect(() => {
     checkLocalUser();
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -97,6 +98,7 @@ export default function App() {
     return () => unsub();
   }, []);
 
+  // Check loading state
   useEffect(() => {
     console.log('Loading: ', loading);
   }, [loading])

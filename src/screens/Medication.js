@@ -63,9 +63,14 @@ export default function Medication() {
   useFocusEffect(
     useCallback(() => {
       fetchMedications();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
       setLocalMedications(medications);
       console.log('focused');
-    }, [])
+    }, [medications])
   );
 
   useEffect(() => {

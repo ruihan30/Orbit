@@ -214,7 +214,7 @@ export default function ReminderDetails({ route }) {
                 <Button size='small' type='outline' label='Go Back' onPress={() => setSaveVisible(false)} customStyle={{flex: 1}}></Button>
                 <Button size='small' type='fill' label='Post Reminder' 
                   onPress={() => {
-                    if (!post) postReminder(selectedRecipient)
+                    if (!post) postReminder(selectedRecipient.uid)
                     else updateReminder();
                   }} 
                   customStyle={{flex: 1}}></Button>
@@ -256,7 +256,9 @@ export default function ReminderDetails({ route }) {
                       numberOfLines={1} 
                       ellipsizeMode="tail"
                     >
-                      {selectedRecipient ? selectedRecipient : 'Myself'}
+                      {selectedRecipient 
+                        ? (selectedRecipient === 'Myself' ? selectedRecipient : selectedRecipient.name) 
+                        : 'Myself'}
                     </Text>
                   </View>
                   <CaretDown size={20} color={COLORS.grey800} weight='regular' />
@@ -276,7 +278,7 @@ export default function ReminderDetails({ route }) {
                 <Menu.Item 
                   key={user.uid} 
                   titleStyle={{fontFamily: 'bg-regular', color: COLORS.grey800,}} 
-                  onPress={() => handleSelect(user.uid)} 
+                  onPress={() => handleSelect(user)} 
                   title={user.name} 
                 />
               ))}

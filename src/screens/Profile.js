@@ -239,7 +239,8 @@ export default function Profile() {
 
             <Pressable 
               style={[styles.avatar, {
-                backgroundColor: COLORS[localUser && RAINBOW_FADED[RAINBOW.indexOf(localUser.profileColor)]], 
+                // backgroundColor: COLORS[localUser && RAINBOW_FADED[RAINBOW.indexOf(localUser.profileColor)]], 
+                backgroundColor: COLORS[localUser && localUser.profileColor]
               }]} 
               onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
             >
@@ -247,11 +248,11 @@ export default function Profile() {
               {localUser && ICONS_STRING.includes(localUser.profileIcon) ? (
                 React.createElement(ICONS[ICONS_STRING.indexOf(localUser.profileIcon)], {
                   size: 64,
-                  color: COLORS[localUser.profileColor],
-                  weight: 'regular'
+                  color: COLORS.white,
+                  weight: 'fill'
                 })
               ) : (
-                <User size={64} color={localUser ? COLORS[localUser.profileColor] : COLORS.grey400} weight="regular" />
+                <User size={64} color={COLORS.white} weight="regular" />
               )}
 
               <Pressable 
@@ -322,16 +323,16 @@ export default function Profile() {
                 <View key={connectedUser.uid} style={{width: 76, gap: 4, marginHorizontal: 2}}>
                   <Pressable 
                     style={[styles.supportImgs, {
-                      backgroundColor: COLORS[RAINBOW_FADED[RAINBOW.indexOf(connectedUser.profileColor)]]
+                      backgroundColor: COLORS[connectedUser.profileColor]
                       }]}>
                     {ICONS_STRING.includes(connectedUser.profileIcon) ? (
                       createElement(ICONS[ICONS_STRING.indexOf(connectedUser.profileIcon)], {
                         size: 28,
-                        color: COLORS[connectedUser.profileColor],
-                        weight: 'regular'
+                        color: COLORS.white,
+                        weight: 'fill'
                       })
                     ) : (
-                      <User color={COLORS.grey700} weight="regular" />
+                      <User color={COLORS.white} weight="regular" />
                     )}
                   </Pressable>
                   <Text 
@@ -405,14 +406,14 @@ export default function Profile() {
                     <TouchableOpacity
                       key={ICONS_STRING[index]}
                       style={[styles.chooseAvatar, {
-                        backgroundColor: selectedColor !== 'grey400' ? COLORS[bgColor] : COLORS.fadedRed,
+                        backgroundColor: selectedColor !== 'grey400' ? COLORS[selectedColor] : COLORS.red,
                         borderWidth: selectedAvatar === ICONS_STRING[index] ? 2 : 0, 
-                        borderColor: selectedAvatar === ICONS_STRING[index] ? COLORS[selectedColor] : 'transparent',
+                        borderColor: selectedAvatar === ICONS_STRING[index] ? COLORS.white : 'transparent',
                       }]}
                       onPress={() => setSelectedAvatar(ICONS_STRING[index])}
                       activeOpacity={1}
                     >
-                      <Icon size={44} color={selectedColor !== 'grey400' ? COLORS[selectedColor] : COLORS.red} weight='regular'/>
+                      <Icon size={44} color={selectedColor !== 'grey400' ? COLORS.white : COLORS.red} weight='fill'/>
                     </TouchableOpacity>
                   ))}
                 </View>

@@ -105,7 +105,14 @@ export default function Orbital() {
   };
 
   useEffect(() => {
-    const sortedReminders = [...user.reminders].sort((a, b) => b.postedAt.seconds - a.postedAt.seconds);
+    const sortedReminders = Array.isArray(user?.reminders) 
+      ? [...user.reminders].sort((a, b) => {
+          // Ensure postedAt is defined before accessing seconds
+          const aTime = a?.postedAt?.seconds || 0;
+          const bTime = b?.postedAt?.seconds || 0;
+          return bTime - aTime;
+        })
+      : [];
     setData(sortedReminders);
   }, [user])
 
@@ -118,7 +125,7 @@ export default function Orbital() {
   );
 
   useEffect(() => {
-    setData(user.reminders);
+    setData(user?.reminders || []);
     const fetchData = async () => {
       try {
         const connectedUsers = await fetchConnectedUsers(user.connectedUsers);
@@ -159,16 +166,16 @@ export default function Orbital() {
                   style={{gap: 4, width: 84, alignItems: 'center', paddingHorizontal: 4}}
                 >
                   <View style={[styles.profileImg, {
-                    backgroundColor: COLORS[RAINBOW_FADED[RAINBOW.indexOf(user.profileColor)]],
+                    backgroundColor: user?.profileColor ? COLORS[user.profileColor] : COLORS.grey300
                   }]}>
                     {ICONS_STRING.includes(user.profileIcon) ? (
                       createElement(ICONS[ICONS_STRING.indexOf(user.profileIcon)], {
                         size: 28,
-                        color: COLORS[user.profileColor],
-                        weight: 'regular'
+                        color: COLORS.white,
+                        weight: 'fill'
                       })
                     ) : (
-                      <User color={COLORS.grey700} weight="regular" />
+                      <User color={COLORS.white} weight="regular" />
                     )}
                   </View>
                   <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
@@ -256,9 +263,7 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
         <View style={{
           width: 36, 
           height: 36, 
-          backgroundColor: item.profileColor ? COLORS[RAINBOW_FADED[RAINBOW.indexOf(item.profileColor)]] : COLORS.grey300, 
-          borderWidth: 0.5,
-          borderColor: COLORS[item.profileColor],
+          backgroundColor: item?.profileColor ? COLORS[item.profileColor] : COLORS.grey300, 
           borderRadius: 100,
           alignItems: 'center',
           justifyContent: 'center'
@@ -266,11 +271,11 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
           {ICONS_STRING.includes(item.profileIcon) ? (
             createElement(ICONS[ICONS_STRING.indexOf(item.profileIcon)], {
               size: 20,
-              color: COLORS[item.profileColor],
-              weight: 'regular'
+              color: COLORS.white,
+              weight: 'fill'
             })
           ) : (
-            <User color={COLORS.grey700} weight="regular" size={24}/>
+            <User color={COLORS.white} weight="regular" size={24}/>
           )}
         </View>
         <View>

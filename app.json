@@ -4,7 +4,7 @@
     "slug": "Orbit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/orbit_logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -16,13 +16,22 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/orbit_logo.png"
+        }
+      ]
     ],
     "scheme": "Orbit",
     "extra": {
       "eas": {
         "projectId": "06ed9a44-27aa-440c-b8c4-54a76378e7c9"
       }
+    },
+    "android": {
+      "useNextNotificationsApi": true
     }
   }
 }
