@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect, createElement } from 'react';
+import { useState, useCallback, useEffect, createElement, useRef } from 'react';
 import { Image, View, Text, Pressable, ScrollView, Switch, RefreshControl, Dimensions } from 'react-native';
-import { User, CaretDown, Pill } from 'phosphor-react-native';
+import { User, CaretDown, Pill, Sparkle, Alarm, Planet } from 'phosphor-react-native';
 import { Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse } from 'phosphor-react-native';
 import { TouchableRipple, ActivityIndicator, Menu } from 'react-native-paper';
 import { COLORS } from '../colors/colors.js';
@@ -47,6 +47,9 @@ export default function Home({ onNavigateTo, route }) {
   const { today, week } = getCurrentWeek();
   const [selectedDay, setSelectedDay] = useState(getFormattedDate(today));
   const [alarmsForSelectedDay, setAlarmsForSelectedDay] = useState(groupedAlarms?.[today.day] || []);
+
+  const scrollViewRef = useRef(null);
+  const targetRef = useRef(null);
 
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
@@ -244,6 +247,14 @@ export default function Home({ onNavigateTo, route }) {
     }
   };
 
+  const scrollToTarget = () => {
+    if (targetRef.current) {
+      targetRef.current.measureLayout(scrollViewRef.current, (x, y) => {
+        scrollViewRef.current.scrollTo({ y, animated: true });
+      });
+    }
+  };
+
   useEffect(() => {
     if (!fetchingFirebase) {
       const grouped = groupAlarmsByDay(alarms);
@@ -323,6 +334,15 @@ export default function Home({ onNavigateTo, route }) {
     };
   }, [])
 
+  // disable goback
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      e.preventDefault();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   if (loading && fetchingFirebase) 
     return (
       <View 
@@ -344,8 +364,8 @@ export default function Home({ onNavigateTo, route }) {
           {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
           {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
           {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(selectedUser)}></Button>
-          <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button>
-          <Button size='small' type='fill' label='Test notifications' onPress={() => navigation.navigate('Test')}></Button> */}
+          <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button> */}
+          {/* <Button size='small' type='fill' label='Test notifications' onPress={() => navigation.navigate('OnboardingMedications')}></Button> */}
           {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button> */}
           
           <ScrollView 
@@ -354,7 +374,60 @@ export default function Home({ onNavigateTo, route }) {
             refreshControl={
               <RefreshControl refreshing={loading} onRefresh={onRefresh} />
             }
+            ref={scrollViewRef}
           >
+            <View style={{paddingVertical: 16, paddingHorizontal: 20}}>
+              <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>Hello,</Text>
+              <Text style={{fontFamily: 's-semibold', fontSize: 20, color: COLORS.grey800}}>{user?.name}</Text>
+            </View>
+
+            <View style={[styles.flexRow, {paddingHorizontal: 12, gap: 8, marginBottom: 8}]}>
+
+              <Pressable style={styles.homeComponent} onPress={scrollToTarget}>
+                <View style={{backgroundColor: COLORS.pink200, padding: 10, borderRadius: 14, alignSelf: 'flex-start'}}>
+                  <Alarm size={20} color={COLORS.pink700}/>
+                </View>
+                <View>
+                  <Text style={styles.homeComponentHeader}>View Alarms</Text>
+                  <Text style={styles.homeComponentText}>Keep your medication schedule on track. </Text>
+                </View>
+              </Pressable>
+
+              <Pressable style={styles.homeComponent} onPress={() => {onNavigateTo(3)}}>
+                <View style={{backgroundColor: COLORS.pink200, padding: 10, borderRadius: 14, alignSelf: 'flex-start'}}>
+                  <Sparkle size={20} color={COLORS.pink700} />
+                </View>
+                <View>
+                  <Text style={styles.homeComponentHeader}>Ask CareBot</Text>
+                  <Text style={styles.homeComponentText}>Got questions? Chat with CareBot to get helpful health tips.</Text>
+                </View>
+              </Pressable>
+
+            </View>
+
+            <View style={[styles.flexRow, {paddingHorizontal: 12, gap: 8, marginBottom: 20}]}>
+
+              <Pressable style={styles.homeComponent} onPress={() => {onNavigateTo(1)}}>
+                <View style={{backgroundColor: COLORS.pink200, padding: 10, borderRadius: 14, alignSelf: 'flex-start'}}>
+                  <Pill size={20} color={COLORS.pink700} />
+                </View>
+                <View>
+                  <Text style={styles.homeComponentHeader}>Manage Medications</Text>
+                  <Text style={styles.homeComponentText}>Track your medications and ensure you're staying on top of your doses.</Text>
+                </View>
+              </Pressable>
+
+              <Pressable style={styles.homeComponent} onPress={() => {onNavigateTo(2)}}>
+                <View style={{backgroundColor: COLORS.pink200, padding: 10, borderRadius: 14, alignSelf: 'flex-start'}}>
+                  <Planet size={20} color={COLORS.pink700} />
+                </View>
+                <View>
+                  <Text style={styles.homeComponentHeader}>Connect in Your Orbital</Text>
+                  <Text style={styles.homeComponentText}>Stay connected with your support network and post reminders for each other.</Text>
+                </View>
+              </Pressable>
+
+            </View>
 
             {/* Calendar */}
             <View style={{padding: 12}}>
@@ -466,7 +539,7 @@ export default function Home({ onNavigateTo, route }) {
               </Menu>
               
               {/* Alarms */}
-              <View style={styles.alarms}>
+              <View style={styles.alarms} ref={targetRef}>
 
                 {loading ? (
                   <View 
@@ -550,7 +623,7 @@ export default function Home({ onNavigateTo, route }) {
                         </View>
                       </TouchableRipple>
                   ))) : (
-                    <View style={styles.defaultStateContainer}>
+                    <View style={[styles.defaultStateContainer, {height: height - 362}]}>
                       <NoAlarms />
                       
                       <Text style={styles.defaultStateHeader}>No alarms set</Text> 

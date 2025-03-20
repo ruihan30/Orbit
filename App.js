@@ -23,6 +23,10 @@ import Landing from './src/screens/authentication/Landing';
 import AlarmDetails from './src/screens/actions/alarmDetails.js';
 import MedicationDetails from './src/screens/actions/medicationDetails.js';
 import ReminderDetails from './src/screens/actions/reminderDetails.js';
+import OnboardingMedications from './src/screens/authentication/onboarding/OnboardingMedications.js';
+import OnboardingAlarms from './src/screens/authentication/onboarding/OnboardingAlarms.js';
+import OnboardingOrbital from './src/screens/authentication/onboarding/OnboardingOrbital.js';
+import OnboardingCarebot from './src/screens/authentication/onboarding/OnboardingCarebot.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -115,6 +119,10 @@ export default function App() {
                   <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}  />
                   <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                   <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
+                  <Stack.Screen name="OnboardingMedications" component={OnboardingMedications} options={{ headerShown: false, animation: "slide_from_right" }}/>
+                  <Stack.Screen name="OnboardingAlarms" component={OnboardingAlarms} options={{ headerShown: false, animation: "slide_from_right" }}/>
+                  <Stack.Screen name="OnboardingOrbital" component={OnboardingOrbital} options={{ headerShown: false, animation: "slide_from_right" }}/>
+                  <Stack.Screen name="OnboardingCarebot" component={OnboardingCarebot} options={{ headerShown: false, animation: "slide_from_right" }}/>
                   <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
                   <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
                   <Stack.Screen name="Test" component={Test} options={{ headerShown: false, animation: "slide_from_bottom" }}/>

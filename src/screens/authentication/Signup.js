@@ -81,12 +81,14 @@ export default function Signup() {
       const idToken = await loggedInUser.getIdToken();
 
       login(loggedInUser, idToken);
+
+      const nameFromEmail = user.email.split('@')[0];
   
       const userDocRef = doc(db, "user", user.uid);
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
-        name: user.email,
+        name: nameFromEmail,
         profileIcon: null,
         profileColor: '',
         invites: [],

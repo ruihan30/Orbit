@@ -1,12 +1,10 @@
 import React from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput } from 'react-native-paper';
+import { Image, View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../colors/colors.js';
 import { Button } from '../../components/button.js';
 import Logo from '../../../assets/logo_name.svg';
 import Background from '../../../assets/landing_bg.svg';
-import { styles } from '../../styles/styles.js';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Landing() {

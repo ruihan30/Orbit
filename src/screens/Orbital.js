@@ -51,6 +51,11 @@ export default function Orbital() {
 
   const fetchConnectedUsers = async (connectedUserIds) => {
     try {
+      if (!Array.isArray(connectedUserIds)) {
+        console.error('Expected connectedUserIds to be an array.');
+        return [];
+      }
+
       const userPromises = connectedUserIds.map(async (userId) => {
         const userDocRef = doc(db, "user", userId);
         const userDoc = await getDoc(userDocRef);
@@ -173,7 +178,7 @@ export default function Orbital() {
                   <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
                 </View>
 
-              {connectedUsers && connectedUsers.map((user) => (
+              {connectedUsers && connectedUsers.length > 0 ? (connectedUsers.map((user) => (
                 <View  
                   key={user.uid}
                   style={{gap: 4, width: 84, alignItems: 'center', paddingHorizontal: 4}}
@@ -193,7 +198,9 @@ export default function Orbital() {
                   </View>
                   <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
                 </View>
-              ))}
+              ))) : (
+                <></>
+              )}
                 
             </View>
           </ScrollView>

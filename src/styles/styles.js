@@ -26,7 +26,6 @@ export const styles = StyleSheet.create({
   defaultStateContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'blue',
     paddingVertical: 28,
     paddingHorizontal: 16,
     gap: 4
@@ -37,6 +36,35 @@ export const styles = StyleSheet.create({
     color: COLORS.grey700,
   },
   defaultStateText: {
+    fontFamily: 'bg-regular',
+    fontSize: 16,
+    color: COLORS.grey500,
+    textAlign: 'center'
+  },
+  homeComponent: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+    flex: 1
+  },
+  homeComponentHeader: {
+    fontFamily: 's-semibold',
+    fontSize: 16,
+    color: COLORS.grey800
+  },
+  homeComponentText: {
+    fontFamily: 'bg-regular',
+    fontSize: 14,
+    color: COLORS.grey500,
+  },
+  onboardingHeader: {
+    fontFamily: 's-semibold',
+    fontSize: 24,
+    color: COLORS.grey700,
+    textAlign: 'center'
+  },
+  onboardingText: {
     fontFamily: 'bg-regular',
     fontSize: 16,
     color: COLORS.grey500,
