@@ -1,11 +1,8 @@
 import { useState, createElement, useCallback, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native'; 
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView, Pressable } from 'react-native-gesture-handler';
+import { View, Text, Dimensions, ScrollView, Pressable } from 'react-native';
 import { COLORS } from '../colors/colors.js';
-import { Appbar, TouchableRipple, Portal, Modal } from 'react-native-paper';
-import { Plus, User, PersonArmsSpread, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, PawPrint, PencilSimpleLine, X, CaretRight, SignOut } from 'phosphor-react-native';
+import { User, Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse, Plus } from 'phosphor-react-native';
 import { styles } from '../styles/styles.js';
 import MasonryList from '@react-native-seoul/masonry-list';
 import useAuthStore from '../store/useAuthStore.js';
@@ -13,10 +10,10 @@ import { useEffect } from 'react';
 import { Button } from '../components/button.js';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../utilities/firebaseConfig.js';
-import { useAuth } from '../utilities/authProvider.js';
 import { useNavigation } from '@react-navigation/native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
+import NoReminders from '../../assets/default_states/no_reminders.svg';
 
 const RAINBOW = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'];
 const RAINBOW_FADED = ['fadedRed', 'fadedOrange', 'fadedYellow', 'fadedGreen', 'fadedBlue', 'fadedPurple', 'fadedPink'];
@@ -90,7 +87,16 @@ export default function Orbital() {
           (reminder) => reminder.postedAt.seconds !== deletedItem.postedAt.seconds
         );
 
-        setData(updatedReminders);
+        const sortedReminders = Array.isArray(updatedReminders) 
+          ? [...updatedReminders].sort((a, b) => {
+              // Ensure postedAt is defined before accessing seconds
+              const aTime = a?.postedAt?.seconds || 0;
+              const bTime = b?.postedAt?.seconds || 0;
+              return bTime - aTime;
+            })
+          : [];
+
+        setData(sortedReminders);
   
         await updateDoc(userDocRef, {
           reminders: updatedReminders,
@@ -120,7 +126,7 @@ export default function Orbital() {
   useFocusEffect(
     useCallback(() => {
       fetchUser();
-      console.log('focused');
+      // console.log('focused');
     }, [])
   );
 
@@ -140,12 +146,12 @@ export default function Orbital() {
   }, [])
 
   return (
-    <SafeAreaProvider style={{backgroundColor: COLORS.white, flex: 1}}>
+    <View style={{backgroundColor: COLORS.white, flex: 1}}>
       {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(user.reminders)}></Button>
       <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(data)}></Button> */}
         
       <View style={[styles.reminderBoard, {flex: 1, alignItems: 'start'}]}>
-        <View style={{elevation: 2, position: 'absolute', top: 12, left: 16, right: 16, zIndex: 2, overflow: 'hidden', borderRadius: 20, }}>
+        <View style={{elevation: 5, position: 'absolute', top: 12, left: 16, right: 16, zIndex: 2, overflow: 'hidden', borderRadius: 20, }}>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
@@ -160,6 +166,13 @@ export default function Orbital() {
               overflow: 'hidden',
               width: '100%'
             }]}>
+                <View style={{gap: 4, width: 84, alignItems: 'center', paddingHorizontal: 4}}>
+                  <Pressable style={[styles.profileImg, {backgroundColor: COLORS.grey200}]} onPress={() => navigation.navigate('Profile')}>
+                    <Plus color={COLORS.grey700} weight="regular" />
+                  </Pressable>
+                  <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
+                </View>
+
               {connectedUsers && connectedUsers.map((user) => (
                 <View  
                   key={user.uid}
@@ -185,14 +198,24 @@ export default function Orbital() {
             </View>
           </ScrollView>
         </View>
-
-        <MasonryList
+        
+        {data.length > 0 ? (
+          <MasonryList
           data={data}
           keyExtractor={(item) => item.id}
-          numColumns={2} 
+          numColumns={1} 
           renderItem={({ item }) => <GridItem item={item} navigation={navigation} user={user} openBottomSheet={openBottomSheet} setDeletedItem={setDeletedItem}/>}
           contentContainerStyle={{padding: 4, paddingTop: 120}}
         />
+        ) : (
+          <View style={[styles.defaultStateContainer, {flex: 1, paddingTop: 100}]}>
+            <NoReminders />
+            
+            <Text style={styles.defaultStateHeader}>No active reminders</Text> 
+            <Text style={styles.defaultStateText}>You haven't set any reminders yet. Stay on track by adding one now!  {'\n'} Members in your support Orbital can also post reminders for you. </Text>
+          </View>
+        )}
+
       </View>
 
       <BottomSheet
@@ -226,11 +249,11 @@ export default function Orbital() {
         </BottomSheetView>
       </BottomSheet>
 
-    </SafeAreaProvider>
+    </View>
   );
 }
 
-const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) => {
+const GridItem = ({ item, navigation, user, openBottomSheet , setDeletedItem }) => {
   const formatPostedAt = (timestamp) => {
     if (!timestamp?.seconds) return "Invalid Date";
   
@@ -244,7 +267,11 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
 
   return (
     <Pressable 
-      style={[styles.reminderCard, {backgroundColor: COLORS[item.postColor]}]} 
+      style={[styles.reminderCard, {
+        backgroundColor: COLORS[item.postColor],
+        // borderWidth: 1,
+        // borderColor: COLORS[RAINBOW[RAINBOW_FADED.indexOf(item.postColor)]]
+      }]} 
       onPress={() => {
         if (user.uid == item.recipient) navigation.navigate('ReminderDetails', { post: item });
       }}
@@ -256,13 +283,13 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
       <View style={{gap: 2}}>
         <Text style={{fontFamily: 's-semibold', color: COLORS.grey800, fontSize: 16 }}>{item.title}</Text>
         {item.message && 
-          <Text style={{fontFamily: 'bg-regular', color: COLORS.grey500, fontSize: 16 }}>{item.message}</Text>
+          <Text style={{fontFamily: 'bg-regular', color: COLORS.grey600, fontSize: 16 }}>{item.message}</Text>
         }
       </View>
-      <View style={[styles.flexRow, {gap: 6}]}>
+      <View style={[styles.flexRow, {gap: 6, flex: 1, alignSelf: 'flex-end',}]}>
         <View style={{
-          width: 36, 
-          height: 36, 
+          width: 30, 
+          height: 30, 
           backgroundColor: item?.profileColor ? COLORS[item.profileColor] : COLORS.grey300, 
           borderRadius: 100,
           alignItems: 'center',
@@ -270,7 +297,7 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
         }}>
           {ICONS_STRING.includes(item.profileIcon) ? (
             createElement(ICONS[ICONS_STRING.indexOf(item.profileIcon)], {
-              size: 20,
+              size: 18,
               color: COLORS.white,
               weight: 'fill'
             })
@@ -278,9 +305,9 @@ const GridItem = ({ item, navigation, user, openBottomSheet, setDeletedItem }) =
             <User color={COLORS.white} weight="regular" size={24}/>
           )}
         </View>
-        <View>
-          <Text style={{fontFamily: 'bg-semibold', color: COLORS.grey700, fontSize: 14 }}>{item.postedBy}</Text>
-          <Text style={{fontFamily: 'bg-medium', color: COLORS.grey500, fontSize: 12 }}>
+        <View style={{gap: 2}}>
+          <Text style={{fontFamily: 'bg-medium', color: COLORS.grey800, fontSize: 14, lineHeight: 16}}>{item.postedBy}</Text>
+          <Text style={{fontFamily: 'bg-medium', color: COLORS.grey500, fontSize: 12, lineHeight: 14 }}>
             {formatPostedAt(item.postedAt)}
           </Text>
         </View>

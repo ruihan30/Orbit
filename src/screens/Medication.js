@@ -1,23 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
 import { COLORS } from '../colors/colors.js';
-import { Appbar, TouchableRipple } from 'react-native-paper';
-import { Bell, Alarm, Eyedropper, CalendarHeart, Pill } from 'phosphor-react-native';
+import { TouchableRipple } from 'react-native-paper';
+import { Alarm, Eyedropper, CalendarHeart, Pill } from 'phosphor-react-native';
 import { styles } from '../styles/styles.js';
 import { Button } from '../components/button.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import useAuthStore from '../store/useAuthStore.js';
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { getAuth } from 'firebase/auth';
+import { deleteDoc, doc } from "firebase/firestore";
 import { db } from '../utilities/firebaseConfig.js';
 import { useFocusEffect } from '@react-navigation/native'; 
 import useMedStore from '../store/useMedStore.js';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
+import NoMedications from '../../assets/default_states/no_medications.svg';
 
 export default function Medication() {
   const navigation = useNavigation();
@@ -69,7 +67,7 @@ export default function Medication() {
   useFocusEffect(
     useCallback(() => {
       setLocalMedications(medications);
-      console.log('focused');
+      // console.log('focused');
     }, [medications])
   );
 
@@ -80,8 +78,7 @@ export default function Medication() {
   }, [])
 
   return (
-    <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
-      <GestureHandlerRootView>
+    <View style={{backgroundColor: COLORS.bg, flex: 1}}>
 
         {/* <Button size='small' type='fill' label='Test' onPress={() => {console.log(localMedications)}}></Button> */}
 
@@ -91,7 +88,7 @@ export default function Medication() {
         >
           
           {/* First for adding */}
-          <TouchableRipple 
+          {/* <TouchableRipple 
             style={styles.medicationRipple} 
             rippleColor={'rgba(51,51,51,0.25)'}
             onPress={() => navigation.navigate('MedicationDetails')}
@@ -111,7 +108,7 @@ export default function Medication() {
                 <Text style={{textAlign: 'center', fontFamily: 's-semibold', color: COLORS.grey500}}>Add to{'\n'} My Medication</Text>
               </View>
             </View>
-          </TouchableRipple>
+          </TouchableRipple> */} 
                 
           {localMedications?.length > 0 ? (
             localMedications.map((med) => (
@@ -159,12 +156,6 @@ export default function Medication() {
                   )}
 
                   <View style={{padding: 2}}>
-                    {med.dosagesLeft && 
-                      <View style={[styles.flexRow, {gap: 4, paddingHorizontal: 4}]}>
-                        <Eyedropper size={18} color={COLORS.grey700} />
-                        <Text style={styles.medicationText}>{med.dosagesLeft} dosages left</Text>
-                      </View>
-                    }
                     <View style={[styles.flexRow, {gap: 4, paddingHorizontal: 4}]}>
                       <CalendarHeart size={18} color={COLORS.grey700} />
                       <Text style={styles.medicationText}>Exp: {med.expiryDate}</Text>
@@ -175,7 +166,12 @@ export default function Medication() {
               </TouchableRipple>
             ))
           ) : (
-            <View></View>
+            <View style={[styles.defaultStateContainer, {height: height/10*8, flex: 1}]}>
+              <NoMedications />
+              
+              <Text style={styles.defaultStateHeader}>No medications added</Text> 
+              <Text style={styles.defaultStateText}>You haven't added any medications yet.{'\n'}Tap the + button to start adding your medications and manage your doses!</Text>
+            </View>
           )}
 
         </ScrollView>
@@ -203,7 +199,7 @@ export default function Medication() {
               <Button 
                 size='large' 
                 type='fill' 
-                label='Delete post' 
+                label='Delete medication' 
                 onPress={() => {
                   deleteMedication(deletedMedication);
                   closeBottomSheet();
@@ -214,7 +210,6 @@ export default function Medication() {
           </BottomSheetView>
         </BottomSheet>
 
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
+    </View>
   );
 }

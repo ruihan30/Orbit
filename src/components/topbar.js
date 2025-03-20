@@ -1,7 +1,6 @@
 import { Appbar, Badge } from "react-native-paper"
 import { View, Text } from "react-native"
 import { User, Bell, ArrowLeft } from "phosphor-react-native"
-import Logo from '../../assets/logo_name_nopad.svg';
 import { COLORS } from "../colors/colors";
 import { styles } from "../styles/styles";
 import { useNavigation } from "@react-navigation/native";

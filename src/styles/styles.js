@@ -23,6 +23,25 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.teal900,
     borderRadius: 10
   },
+  defaultStateContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'blue',
+    paddingVertical: 28,
+    paddingHorizontal: 16,
+    gap: 4
+  },
+  defaultStateHeader: {
+    fontFamily: 's-semibold',
+    fontSize: 20,
+    color: COLORS.grey700,
+  },
+  defaultStateText: {
+    fontFamily: 'bg-regular',
+    fontSize: 16,
+    color: COLORS.grey500,
+    textAlign: 'center'
+  },
 
   // Top Bar
   logo: {
@@ -116,7 +135,7 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     padding: 8,
     paddingRight: 16,
-    borderRadius: 24,
+    borderRadius: 100,
     justifyContent: 'space-between',
     flex: 1
   },
@@ -142,7 +161,7 @@ export const styles = StyleSheet.create({
     borderRadius: 24,
     marginBottom: 8,
     // gap: 8,
-    elevation: 1
+    elevation: 2
   },
   numberOfMeds: {
     backgroundColor: COLORS.pink100,
@@ -271,7 +290,7 @@ export const styles = StyleSheet.create({
   medicationRipple: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
-    padding: 8,
+    padding: 10,
     alignSelf: 'start',
     width: (width/2)-12,
     marginTop: 8,
@@ -360,9 +379,10 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
   reminderCard: {
-    padding: 12,
-    gap: 32,
-    margin: 6,
+    padding: 16,
+    gap: 64,
+    marginHorizontal: 8,
+    marginVertical: 6,
     borderWidth: 0.5,
     borderColor: COLORS.grey200
   },
@@ -442,7 +462,74 @@ export const styles = StyleSheet.create({
     padding: 16,
     gap: 8,
     elevation: 2
-  }
+  },
+
+  // Carebot
+  chatContainer: {
+    flex: 1,
+    paddingVertical: 12,
+  },
+  responseBox: {
+    backgroundColor: COLORS.white,
+    padding: 16,
+    borderRadius: 24,
+    marginVertical: 8,
+    width: '85%',
+    marginLeft: 12, 
+    // marginBottom: 92,
+    borderColor: COLORS.grey200,
+    borderWidth: 2
+  },
+  questionBox: {
+    backgroundColor: COLORS.green500,
+    padding: 16,
+    borderRadius: 24,
+    width: '85%',
+    marginRight: 12,
+    alignSelf: 'flex-end',
+    borderColor: COLORS.green300,
+    borderWidth: 2
+  },
+  chatText: {
+    fontFamily: 'bg-regular',
+    fontSize: 16,
+    lineHeight: 24,
+    color: COLORS.grey900,
+  },
+  placeholderText: {
+    textAlign: 'center',
+    color: COLORS.grey500,
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 100,
+    padding: 8,
+    paddingLeft: 16,
+    elevation: 5,
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    bottom: 8,
+    borderWidth: 1,
+    borderColor: COLORS.grey200
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: COLORS.grey950,
+    fontFamily: 'bg-medium',
+  },
+  sendButton: {
+    backgroundColor: COLORS.green500,
+    borderRadius: 24,
+    padding: 12,
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
 
 });

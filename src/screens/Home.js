@@ -1,29 +1,20 @@
-import { useState, useMemo, useCallback, useRef, useEffect, createElement } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, TouchableOpacity, TouchableHighlight, RefreshControl, Dimensions, AppState } from 'react-native';
-import { House, Bell, User, CaretDown, Minus, ArrowCircleDown, Plus, Scroll, Pill } from 'phosphor-react-native';
+import { useState, useCallback, useEffect, createElement } from 'react';
+import { Image, View, Text, Pressable, ScrollView, Switch, RefreshControl, Dimensions } from 'react-native';
+import { User, CaretDown, Pill } from 'phosphor-react-native';
 import { Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse } from 'phosphor-react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Appbar, TouchableRipple, ActivityIndicator, Menu, PaperProvider } from 'react-native-paper';
+import { TouchableRipple, ActivityIndicator, Menu } from 'react-native-paper';
 import { COLORS } from '../colors/colors.js';
 import { Chip } from '../components/chip.js';
 import { Button } from '../components/button.js';
 import { styles } from '../styles/styles.js';
 import { useNavigation } from '@react-navigation/native';
-import Logo from '../../assets/logo_name_nopad.svg';
-import { useAuth } from '../utilities/authProvider.js';
-import { getAuth, signOut } from 'firebase/auth';
 import useAuthStore from '../store/useAuthStore.js';
-import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native'; 
-import { shallow } from 'zustand/shallow';
 import useAlarmStore from '../store/useAlarmStore.js';
 import useMedStore from '../store/useMedStore.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import * as Notifications from "expo-notifications";
 import * as Permissions from 'expo-permissions';
+import NoAlarms from '../../assets/default_states/no_alarms.svg';
 
 import { db } from '../utilities/firebaseConfig.js';
 import { collection, getDocs, addDoc, getDoc, doc } from "firebase/firestore";
@@ -42,6 +33,7 @@ export default function Home({ onNavigateTo, route }) {
   const { medications, fetchMedications } = useMedStore();
   const { alarms, fetchAlarms, updateAlarm } = useAlarmStore(); 
   const { fetchUser, user } = useAuthStore();
+  const [fetchingFirebase, setFetchingFirebase] = useState(false);
   
   const [localMedications, setLocalMedications] = useState();
   const [groupedAlarms, setGroupedAlarms] = useState(null);
@@ -72,43 +64,23 @@ export default function Home({ onNavigateTo, route }) {
     }),
   });
 
-  // const askNotificationPermission = async () => {
-  //   const { status } = await Notifications.requestPermissionsAsync();
-  //   return status === 'granted';
-  // };
+  const askNotificationPermission = async () => {
+    const { status } = await Notifications.requestPermissionsAsync();
+    return status === 'granted';
+  };
 
-  // const scheduleNotification = async () => {
-  //   // Make sure you have permission to show notifications
-  //   const hasPermission = await askNotificationPermission();
-  //   if (!hasPermission) return;
-  
-  //   // Schedule the notification with action buttons
-  //   await Notifications.scheduleNotificationAsync({
-  //     content: {
-  //       title: "Test Notification",
-  //       body: "Click to mark as taken.",
-  //       data: { alarmId: "testAlarm123" },
-  //       actions: [
-  //         {
-  //           identifier: "MARK_TAKEN",
-  //           buttonTitle: "✅ Mark as Taken",
-  //           options: { foreground: true },
-  //         },
-  //       ],
-  //     },
-  //     trigger: null, // Trigger immediately
-  //   });
-  
-  //   console.log('Notification scheduled!');
-  // };
+  async function fetchScheduledNotifications() {
+    const notifications = await Notifications.getAllScheduledNotificationsAsync();
+    console.log(JSON.stringify(notifications, null, 2));
+  }
 
-  // Notifications.addNotificationResponseReceivedListener((response) => {
-  //   console.log("User interacted with the notification:", response);
-  //   // const alarmId = response.notification.request.content.data.alarmId;
-  //   // if (alarmId) {
-  //   //   markMedicationAsTaken(alarmId);
-  //   // }
-  // });
+  Notifications.addNotificationResponseReceivedListener(response => {
+    console.log('Notification action received:', response);
+    if (response.actionIdentifier === 'MARK_TAKEN') {
+      console.log('Mark as Taken button pressed!');
+      // Handle the action (e.g., mark as taken)
+    }
+  });
 
   const handleScroll = (event) => {
     const contentOffsetY = event.nativeEvent.contentOffset.y;
@@ -272,37 +244,8 @@ export default function Home({ onNavigateTo, route }) {
     }
   };
 
-  const sendPushNotification = async (pushToken, message) => {
-    const body = JSON.stringify({
-      to: pushToken,
-      sound: '../../assets/ringtones/Phantom.mp3',
-      title: 'Hello',
-      body: message,
-      data: { extraData: 'Some extra data' },
-      actions: [
-        {
-          identifier: "MARK_TAKEN",
-          buttonTitle: "✅ Mark as Taken",
-          options: { foreground: true },
-        },
-      ],
-    });
-  
-    const response = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body,
-    });
-  
-    const data = await response.json();
-    console.log('Push notification response:', data);
-  };
-
   useEffect(() => {
-    if (!loading) {
+    if (!fetchingFirebase) {
       const grouped = groupAlarmsByDay(alarms);
       setGroupedAlarms(grouped);
       const alarmsForDay = grouped?.[today.day] || [];
@@ -324,7 +267,10 @@ export default function Home({ onNavigateTo, route }) {
   
       fetchData();
     }
-  }, [alarms, loading]);
+
+    setFetchingFirebase(false);
+    setLoading(false);
+  }, [alarms, fetchingFirebase]);
 
   // when focused after coming back from another page
   useFocusEffect(
@@ -348,7 +294,7 @@ export default function Home({ onNavigateTo, route }) {
         await fetchUser();
         await fetchMedications();
         await fetchAlarms();
-        setLoading(false);
+        setFetchingFirebase(true);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -359,51 +305,47 @@ export default function Home({ onNavigateTo, route }) {
 
   // Push notifications
   useEffect(() => {
-    const getPushToken = async () => {
-
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission not granted for push notifications.');
-        return;
-      }
-
-      const token = await Notifications.getExpoPushTokenAsync();
-      console.log('Push Token:', token);
-      setPushToken(token);
-      // Save this token to your server for sending push notifications
-    };
-    
-    getPushToken();
 
     // Notification received while the app is in the foreground
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
     });
-
     // Handle notifications when app is in the background or terminated
     const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification clicked:', response);
     });
 
+    // createNotificationChannel();
 
     return () => {
       notificationListener.remove();
       responseListener.remove();
     };
   }, [])
-  
+
+  if (loading && fetchingFirebase) 
+    return (
+      <View 
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <ActivityIndicator animating={true}/>
+      </View>
+    );
+
   return (
-    <SafeAreaProvider style={{backgroundColor: COLORS.bg, flex: 1}}>
-      <PaperProvider>
-        <GestureHandlerRootView>
+    <View style={{backgroundColor: COLORS.bg, flex: 1}}>
 
           {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarms)}></Button>
           <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(groupedAlarms)}></Button> */}
           {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
           {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
           {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
-          <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(connectedUsers)}></Button>
-          <Button size='small' type='fill' label='Test notifications' onPress={() => {sendPushNotification(pushToken.data, 'test message')}}></Button>
+          {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(selectedUser)}></Button>
+          <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button>
+          <Button size='small' type='fill' label='Test notifications' onPress={() => navigation.navigate('Test')}></Button> */}
           {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button> */}
           
           <ScrollView 
@@ -461,15 +403,6 @@ export default function Home({ onNavigateTo, route }) {
             
             <View style={{paddingHorizontal: 12, paddingTop: 8}}>
               
-              {/* <Menu
-                visible={menuVisible}
-                onDismiss={closeMenu}
-                anchor={<Pressable onPress={openMenu}><Text>Show menu</Text></Pressable>}>
-                <Menu.Item onPress={() => {}} title="Item 1" />
-                <Menu.Item onPress={() => {}} title="Item 2" />
-                <Menu.Item onPress={() => {}} title="Item 3" />
-              </Menu> */}
-              
               {/* Dropdown */}
               <Menu
                 visible={menuVisible}
@@ -479,16 +412,17 @@ export default function Home({ onNavigateTo, route }) {
                     <View style={[styles.flexRow, {gap: 8, flex: 1}]}>
                       <View 
                         style={{
-                          height: 32, 
-                          width: 32, 
+                          // height: 32, 
+                          // width: 32, 
+                          padding: 12,
                           backgroundColor: selectedUser ? COLORS[selectedUser.profileColor] : COLORS.grey300, 
-                          borderRadius: 20, 
+                          borderRadius: 100, 
                           alignItems: 'center', 
                           justifyContent: 'center',
                         }}>
                         {ICONS_STRING.includes(selectedUser?.profileIcon) ? (
                           createElement(ICONS[ICONS_STRING.indexOf(selectedUser.profileIcon)], {
-                            size: 18,
+                            size: 22,
                             color: COLORS.white,
                             weight: 'fill'
                           })
@@ -506,25 +440,28 @@ export default function Home({ onNavigateTo, route }) {
                   </Pressable>
                 }
                 elevation={1}
-                statusBarHeight={-4}
+                statusBarHeight={40}
+                anchorPosition='bottom'
                 style={{borderRadius: 20, width: width-24 }}
-                contentStyle={{borderRadius: 16, paddingVertical: 8, paddingRight: 8, overflow: 'hidden', backgroundColor: COLORS.white, flex: 1}}
+                contentStyle={{borderRadius: 16, paddingVertical: 8, paddingRight: 8, overflow: 'hidden', backgroundColor: COLORS.white,}}
               >
                 {selectedUser !== user && (
                   <Menu.Item 
                     titleStyle={{fontFamily: 'bg-regular', color: COLORS.grey800,}} 
                     onPress={() => handleSelect(user)} 
                     title={`${user?.name}'s Alarms`} 
+
                   />
                 )}
 
-                {connectedUsers && connectedUsers.map((user) => (
-                  <Menu.Item
-                    key={user.uid}
-                    titleStyle={{fontFamily: 'bg-regular', color: COLORS.grey800,}} 
-                    onPress={() => handleSelect(user)} 
-                    title={user?.name}
-                  />
+                {connectedUsers && connectedUsers.map((user) => 
+                  user !== selectedUser &&(
+                    <Menu.Item
+                      key={user.uid}
+                      titleStyle={{fontFamily: 'bg-regular', color: COLORS.grey800,}} 
+                      onPress={() => handleSelect(user)} 
+                      title={user?.name}
+                    />
                 ))}
               </Menu>
               
@@ -542,20 +479,28 @@ export default function Home({ onNavigateTo, route }) {
                       <ActivityIndicator animating={true}/>
                   </View>
                 ):(
-                  (!loading && (alarmsForSelectedDay.length > 0)) ? (
+                  !loading && selectedUser && alarmsForSelectedDay.length > 0 ? (
                     alarmsForSelectedDay.map((alarm, index) => (
                       <TouchableRipple
-                        style={styles.alarmItem} 
+                        style={[styles.alarmItem, {
+                          backgroundColor: selectedUser == user ? COLORS.white : COLORS.grey100
+                        }]} 
                         key={index}
-                        onPress={() =>  navigation.navigate('AlarmDetails', { alarm: alarm })}
+                        onPress={() => navigation.navigate('AlarmDetails', { alarm: alarm })}
                         rippleColor={'rgba(51,51,51,0.25)'}
                         borderless={true}
                         delayPressIn={80}
+                        disabled={selectedUser == user ? false : true}
                       >
                         <View>
                           <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingLeft: 12, paddingVertical: 8, marginBottom: 8}]}>
                             <View style={[styles.flexColumn, {alignItems: 'flex-start'}]}>
-                              <Text style={{fontFamily: 's-semibold', fontSize: 28, color: COLORS.grey800, textAlign: 'center'}}>
+                              <Text style={{
+                                fontFamily: 's-semibold', 
+                                fontSize: 28, 
+                                color: selectedUser == user ? COLORS.grey800 : COLORS.grey500, 
+                                textAlign: 'center'
+                              }}>
                                 {alarm.time}
                               </Text>
                             </View>
@@ -605,7 +550,12 @@ export default function Home({ onNavigateTo, route }) {
                         </View>
                       </TouchableRipple>
                   ))) : (
-                    <Text>no alarms</Text> 
+                    <View style={styles.defaultStateContainer}>
+                      <NoAlarms />
+                      
+                      <Text style={styles.defaultStateHeader}>No alarms set</Text> 
+                      <Text style={styles.defaultStateText}>You haven't set any alarms yet.{'\n'}Tap the + button to create one and never miss a dose!</Text>
+                    </View>
                   )
                 )}
 
@@ -615,8 +565,6 @@ export default function Home({ onNavigateTo, route }) {
 
           </ScrollView>
         
-        </GestureHandlerRootView>
-      </PaperProvider>
-    </SafeAreaProvider>
+    </View>
   );
 }

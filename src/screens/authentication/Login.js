@@ -1,6 +1,6 @@
 import { React, useState, useRef, useEffect }from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput, Snackbar, ActivityIndicator } from 'react-native-paper';
 import { COLORS } from '../../colors/colors.js';
 import { Button } from '../../components/button.js';

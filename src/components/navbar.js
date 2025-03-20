@@ -1,16 +1,14 @@
+import { useCallback } from "react";
 import { COLORS } from "../colors/colors";
-import { StyleSheet, Text, View,  } from 'react-native';
-import useMedStore from "../store/useMedStore";
-import useAlarmStore from "../store/useAlarmStore";
-import { Sparkle, House, Pill, Planet, Plus} from 'phosphor-react-native';
-import { React, useState, useCallback, useEffect,useRef } from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { Sparkle, House, Pill, Planet } from 'phosphor-react-native';
+import { React, useState, useEffect } from 'react';
 import { BottomNavigation } from "react-native-paper";
 import Home from "../screens/Home";
 import Medication from "../screens/Medication";
 import Orbital from "../screens/Orbital";
 import CareBot from "../screens/CareBot";
 import { Portal, FAB } from "react-native-paper";
-import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { TopBar } from "./topbar";
 import Logo from '../../assets/logo_name_nopad.svg';
@@ -27,9 +25,14 @@ export const NavBar = () => {
   useEffect(() => {
     if (navigationState) {
       const currentScreen = navigationState.routes[navigationState.index].name;
-      setFabVisible(currentScreen === "NavBar");
+  
+      if (currentScreen === "NavBar" && index !== 3) {
+        setFabVisible(true);
+      } else {
+        setFabVisible(false);
+      }
     }
-  }, [navigationState]);
+  }, [navigationState, index]);
 
   const routes = [
     {
@@ -56,7 +59,6 @@ export const NavBar = () => {
       focusedIcon: <Sparkle weight="fill" color={COLORS.green600} size={28}/>, 
       unfocusedIcon: <Sparkle weight="regular" color={COLORS.grey500} size={28}/>
     },
-
   ];
 
   const renderScene = ({ route }) => {
@@ -70,7 +72,7 @@ export const NavBar = () => {
       case 'carebot':
         return <CareBot />;
       // case 'add':
-      //     return <Login />;
+      //     return <Medication />;
       default:
         return null;
     }
@@ -96,7 +98,7 @@ export const NavBar = () => {
   };
 
   return (
-  <GestureHandlerRootView>
+  <>
     <Portal>
       <FAB.Group
         open={open}
@@ -160,7 +162,21 @@ export const NavBar = () => {
     <BottomNavigation
       navigationState={{ index, routes }}
       onIndexChange={setIndex} // Update state on tab change
-      renderScene={renderScene}
+      // renderScene={renderScene}
+      renderScene={useCallback(({ route }) => {
+        switch (route.key) {
+          case 'home':
+            return <Home onNavigateTo={handleTabChange} params={{ message: 'message' }}/>;
+          case 'medication':
+            return <Medication />;
+          case 'orbital':
+            return <Orbital />;
+          case 'carebot':
+            return <CareBot />;
+          default:
+            return null;
+        }
+      }, [])}
       renderIcon={({ route, focused }) => {
         const routeData = routes.find(r => r.key === route.key);
         return focused ? routeData.focusedIcon : routeData.unfocusedIcon;
@@ -190,9 +206,10 @@ export const NavBar = () => {
         marginTop: 4,
         backgroundColor: COLORS.teal100
       }}
+      sceneAnimationEnabled={false}
     >
     </BottomNavigation>
-  </GestureHandlerRootView>
+  </>
   );
 }
 

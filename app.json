@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "web": {
@@ -20,7 +20,13 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/orbit_logo.png"
+          "icon": "./assets/orbit_logo.png",
+          "sounds": [
+            "./assets/ringtones/Bell.mp3",
+            "./assets/ringtones/Classic.mp3",
+            "./assets/ringtones/Flute.mp3",
+            "./assets/ringtones/Phantom.mp3"
+          ]
         }
       ]
     ],

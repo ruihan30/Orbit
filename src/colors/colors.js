@@ -60,13 +60,13 @@ export const COLORS = {
   warning: '#F4D06F',
 
   // rainbow
-  fadedRed: '#FBEDED',
-  fadedOrange: '#FEF1E6',
-  fadedYellow: '#FDF6E2',
-  fadedGreen: '#EBF7EC',
-  fadedBlue: '#E7F1FE',
-  fadedPurple: '#F1F0FC',
-  fadedPink: '#F5E9F8',
+  fadedRed: '#F9EDEB',
+  fadedOrange: '#FCF0E9',
+  fadedYellow: '#FCF7E8',
+  fadedGreen: '#EDF7F6',
+  fadedBlue: '#EDF4F8',
+  fadedPurple: '#EEF1F7',
+  fadedPink: '#F7EDF9',
   // fadedRed: 'rgba(215,67,67,0.1)',
   // fadedOrange: 'rgba(244,162,89,0.2)',
   // fadedYellow: 'rgba(246,208,111,0.2)',
@@ -74,12 +74,12 @@ export const COLORS = {
   // fadedBlue: 'rgba(93,163,250,0.15)',
   // fadedPurple: 'rgba(133,102,224,0.1)',
   // fadedPink: 'rgba(188,104,207,0.15)',
-  red: '#E35D5D',
-  orange: '#F4A259',
-  yellow: '#F6D06F',
-  green: '#7ACB81',
-  blue: '#5DA3FA',
-  purple: '#7166E0',
-  pink: '#BC68CF'
+  red: '#EAB8B2',
+  orange: '#F5C6A8',
+  yellow: '#F2E3B2',
+  green: '#A4D8D2',
+  blue: '#A3C6DB',
+  purple: '#A8B9D8',
+  pink: '#D5A6E2'
 
 };

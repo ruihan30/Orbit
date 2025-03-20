@@ -1,9 +1,9 @@
 import React from 'react';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Image, View, Text, StyleSheet, Pressable, ScrollView, Switch, Dimensions } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput, SegmentedButtons, List, TouchableRipple, RadioButton, Checkbox, Snackbar } from 'react-native-paper';
-import { CaretRight, Plus, MinusCircle, TrashSimple, Alarm, Eyedropper, CalendarHeart, Pill, X } from 'phosphor-react-native';
+import { Image, View, Text, Pressable, ScrollView, Dimensions, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SegmentedButtons, List, TouchableRipple, RadioButton, Checkbox, Snackbar } from 'react-native-paper';
+import { Plus, MinusCircle, Alarm, Eyedropper, CalendarHeart, Pill, X } from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../colors/colors.js';
 import { styles } from '../../styles/styles.js';
@@ -13,13 +13,21 @@ import WheelPicker from '@quidone/react-native-wheel-picker';
 import { Audio } from 'expo-av';
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import { Shadow } from 'react-native-shadow-2';
-import { collection, getDocs, doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { getAuth } from 'firebase/auth';
-import { db } from '../../utilities/firebaseConfig.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import useAuthStore from '../../store/useAuthStore.js';
 import useMedStore from '../../store/useMedStore.js';
 import useAlarmStore from '../../store/useAlarmStore.js';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function AlarmDetails({ route }) {
   const navigation = useNavigation();
@@ -27,11 +35,17 @@ export default function AlarmDetails({ route }) {
   const { alarm } = route.params || {};
   const { medications, fetchMedications } = useMedStore();
   const { updateAlarm, addAlarm, deleteAlarm } = useAlarmStore();
-  const [toastVisible, setToastVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [alarmDetails, setAlarmDetails] = useState({
+    id: '',
+    time: '', // required
+    frequency: '', // required
+    days: [], // required if frequency is not daily
+    ringtone: {}, 
+    vibration: false,
+    medicationIds: [],
+    enabled: true,
+  });
 
-  const [frequency, setFrequency] = useState('daily'); 
-  const [selectedDays, setSelectedDays] = useState([]);
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const RINGTONES = [
     { id: 1, name: 'Bell', uri: require('../../../assets/ringtones/Bell.mp3') },
@@ -40,14 +54,14 @@ export default function AlarmDetails({ route }) {
     { id: 4, name: 'Phantom', uri: require('../../../assets/ringtones/Phantom.mp3') },
   ];
 
+  const [toastVisible, setToastVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { width, height } = Dimensions.get('window');
   const [boxWidth, setBoxWidth] = useState(null);
-
   const bottomSheetRef = useRef(null);
   const [bottomSheetTitle, setBottomSheetTitle] = useState('');
   const [sound, setSound] = useState(null);
   const [ringtoneRadioBtn, setRingtoneRadioBtn] = useState(0);
-
   const [selectedHour, setSelectedHour] = useState(() => {
     const timeComponents = alarm?.time ? getTimeComponents(alarm.time) : null;
     return timeComponents ? timeComponents.hour : '1'; 
@@ -68,19 +82,12 @@ export default function AlarmDetails({ route }) {
     value: index,
     label: index.toString().padStart(2, '0'),
   }))
+  
+  const [expoPushToken, setExpoPushToken] = useState(''); 
+  const [notification, setNotification] = useState(undefined); 
 
-  const [alarmDetails, setAlarmDetails] = useState({
-    id: '',
-    time: '', // required
-    frequency: '', // required
-    days: [], // required if frequency is not daily
-    ringtone: {}, 
-    vibration: false,
-    medicationIds: [],
-    enabled: true,
-  });
-  const userDocRef = doc(db, "user", user.uid);
-  const alarmRef = collection(userDocRef, "alarms");
+  const notificationListener = useRef(null); 
+  const responseListener = useRef(null);
 
   const updateAlarmDetails = (field, value, isArray = false, remove = false) => {
     setAlarmDetails((prevDetails) => {
@@ -102,38 +109,6 @@ export default function AlarmDetails({ route }) {
     });
   };
 
-  const saveAlarmDetails = async () => {
-    try {
-      await setDoc(doc(alarmRef), {
-        time: alarmDetails.time,
-        frequency: alarmDetails.frequency,
-        days: alarmDetails.days,
-        ringtone: alarmDetails.ringtone,
-        vibration: alarmDetails.vibration,
-        medicationIds: alarmDetails.medicationIds,
-        enabled: alarmDetails.enabled,
-        createdAt: serverTimestamp(),
-      });
-
-      console.log('updates success')
-
-    } catch (error) {
-      console.error("Error saving alarm details: ", error);
-    }
-
-    console.log(alarmDetails);
-  };
-
-  const updateMedicationAlarmSet = async (medicationIds) => {
-    const updatePromises = medicationIds.map(async (medId) => {
-      const medRef = doc(db, "user", user.uid, "medications", medId);
-      await updateDoc(medRef, { alarmSet: true });
-    });
-  
-    await Promise.all(updatePromises);
-    console.log('Medication alarmSet updated successfully');
-  };
-
   const onToggleSnackBar = () => setToastVisible(!toastVisible);
   const onDismissSnackBar = () => setToastVisible(false);
 
@@ -151,7 +126,6 @@ export default function AlarmDetails({ route }) {
       return prevDetails;
     });
   };
-
   const onHourChange = (hour) => setSelectedHour(hour.item.value);
   const onMinuteChange = (minute) => setSelectedMinute(minute.item.label);
 
@@ -220,7 +194,7 @@ export default function AlarmDetails({ route }) {
     }));
   };
 
-  const validateInputs = () => {
+  const validateInputs = async () => {
     switch (true) {  
       case !alarmDetails.frequency.trim():
         setErrorMessage("Please specify how often the medication should be taken.");
@@ -235,28 +209,108 @@ export default function AlarmDetails({ route }) {
       default:
         if (alarmDetails.id !== '') {
           updateAlarm(alarmDetails); 
-          // navigation.setParams({
-          //   message: 'Alarm updated.', 
-          // });
-          // console.log('Params set:', route.params); 
         } else {
-          addAlarm(alarmDetails);
-          // navigation.setParams({
-          //   message: 'Alarm added.', 
-          // });
-          // console.log('Params set:', route.params); 
+          const newAlarm = await addAlarm(alarmDetails);
+          if (newAlarm && newAlarm.id) {
+            console.log(newAlarm.id);
+            await scheduleNotification(newAlarm);
+          }
         }
         navigation.goBack();
         return true;
     }
   };
 
+  async function scheduleNotification(alarm) {
+    const { time, days } = alarm;
+    const [timeString, ampm] = time.split(' ');
+    const [hour, minute] = timeString.split(':').map(num => parseInt(num, 10));
+
+    let hoursIn24Format = hour;
+    if (ampm === 'pm' && hour !== 12) hoursIn24Format = hour + 12;
+    if (ampm === 'am' && hour === 12) hoursIn24Format = 0;
+
+    console.log(hoursIn24Format, minute);
+  
+    if (alarm.frequency === 'daily') {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Time to take your medication",
+          body: "Don't forget to take your medication. Tap here to check your medications or confirm you've taken it!",
+          data: { data: alarm },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: hoursIn24Format,
+          minute: minute,
+        },
+      });
+
+    } else if (alarm.frequency === 'custom' && days.length > 0) {
+      const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+      for (let day of days) {
+        const dayIndex = daysOfWeek.indexOf(day);
+  
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Time to take your medication",
+            body: "Don't forget to take your medication. Tap here to check your medications or confirm you've taken it!",
+            data: { data: alarm },
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+            weekday: dayIndex + 1, 
+            hour: hoursIn24Format,
+            minute: minute,
+          },
+        });
+  
+        console.log(`Scheduled notification for ${day} at ${hoursIn24Format}:${minute}`);
+      }
+    }
+  };
+
+  async function deleteScheduledNotification(alarmId) {
+    try {
+
+      const allScheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      // console.log('All scheduled notifications:', allScheduledNotifications);
+
+      // Find the notification object by alarmId
+      const notificationsToDelete = allScheduledNotifications.filter(
+        (notification) => notification.content.data.data.id === alarmId
+      );
+
+      console.log(notificationsToDelete)
+  
+      if (notificationsToDelete.length > 0) {
+        for (let notification of notificationsToDelete) {
+          const { identifier } = notification;
+  
+          if (identifier) {
+            await Notifications.cancelScheduledNotificationAsync(identifier);
+            console.log(`Notification with alarm ID: ${alarmId} and identifier: ${identifier} has been deleted.`);
+          } else {
+            console.log(`Notification with alarm ID: ${alarmId} has no valid identifier.`);
+          }
+        }
+      } else {
+        console.log(`No notification found for alarm ID: ${alarmId}`);
+      }
+    } catch (error) {
+      console.error('Error deleting scheduled notification:', error);
+    }
+  };
+  
+  // updating time selected
   useEffect(() => {
     const time = `${selectedHour}:${selectedMinute} ${amPm}`;
     updateAlarmDetails('time', time);
     console.log(time);
   }, [selectedHour, selectedMinute, amPm]);
 
+  // fetching medications and setting alarmdetails on first load
   useEffect(() => {
     fetchMedications();
 
@@ -273,12 +327,35 @@ export default function AlarmDetails({ route }) {
       });
     };
   }, []);
+
+  // debugging notifications
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+
+    if (Platform.OS === 'android') {
+      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
+    }
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.current &&
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
   
   return (
-    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}>
+    <SafeAreaView style={{backgroundColor: COLORS.white, flex: 1, position: 'relative', paddingBottom: 62}}  >
 
       {/* Header */}
-      <View style={[styles.flexRow, {paddingVertical: 8, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: COLORS.grey300, marginBottom: 12, zIndex: 2, backgroundColor: COLORS.white, justifyContent: 'flex-end'}]}>
+      <View style={[styles.flexRow, {paddingVertical: 16, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: COLORS.grey300, marginBottom: 12, zIndex: 2, backgroundColor: COLORS.white, justifyContent: 'flex-end'}]}>
         <Text style={{fontFamily: 's-semibold', color: COLORS.grey600, fontSize: 16, flex: 1}}>
           Alarm Details
         </Text>
@@ -286,6 +363,7 @@ export default function AlarmDetails({ route }) {
           style={{padding: 8, paddingHorizontal: 20}}
           onPress={() => {
             deleteAlarm(alarmDetails.id); 
+            deleteScheduledNotification(alarmDetails.id);
             navigation.setParams({ message: 'params passed back' });
             navigation.goBack();
             // navigation.popTo('NavBar', { message: 'message' });
@@ -302,7 +380,7 @@ export default function AlarmDetails({ route }) {
 
         {/* Details */}
         <View style={{paddingHorizontal: 16, gap: 28}}>
-          {/* <Button size='small' type='outline' label='test' onPress={() => console.log(alarmDetails.id)}></Button> */}
+          <Button size='small' type='fill' label='test' onPress={() => console.log(alarmDetails)}></Button>
 
           {/* Time Picker */}
           <View style={styles.timePicker}>
@@ -346,10 +424,17 @@ export default function AlarmDetails({ route }) {
           </View>
 
           {/* Days selection */}
-          <View style={[styles.flexColumn, {gap: 8}]}>
+          <View style={[styles.flexColumn, {gap: 8, marginBottom: 28}]}>
             <SegmentedButtons
               value={alarmDetails.frequency}
-              onValueChange={(value) => {updateAlarmDetails('frequency', value); updateAlarmDetails('days', []);}}
+              onValueChange={(value) => {
+                updateAlarmDetails('frequency', value); 
+                updateAlarmDetails('days', []);
+
+                if (value === 'daily') {
+                  updateAlarmDetails('days', ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+                }
+              }}
               buttons={[
                 { value: 'daily', label: 'Daily', labelStyle: {fontFamily:'bg-regular', fontSize: 14}},
                 { value: 'weekly', label: 'Weekly', labelStyle: {fontFamily:'bg-regular', fontSize: 14} },
@@ -374,7 +459,7 @@ export default function AlarmDetails({ route }) {
           </View>
           
           {/* Notifications setting */}
-          <View style={{borderRadius: 16, overflow: 'hidden', marginBottom: 28}}>
+          {/* <View style={{borderRadius: 16, overflow: 'hidden', marginBottom: 28}}>
             <List.Item
               title="Ring Tone"
               description={alarmDetails.ringtone.name}
@@ -399,7 +484,7 @@ export default function AlarmDetails({ route }) {
               onPress={() => updateAlarmDetails('vibration', !alarmDetails.vibration)}
               style={{backgroundColor: COLORS.grey100}}
             />
-          </View>
+          </View> */}
 
         </View>
         
@@ -660,4 +745,52 @@ export default function AlarmDetails({ route }) {
 
     </SafeAreaView>
   );
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('myNotificationChannel', {
+      name: 'A channel is needed for the permissions prompt to appear',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    // Learn more about projectId:
+    // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+    // EAS projectId is used here.
+    try {
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      if (!projectId) {
+        throw new Error('Project ID not found');
+      }
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+      console.log(token);
+    } catch (e) {
+      token = `${e}`;
+    }
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+
+  return token;
 }

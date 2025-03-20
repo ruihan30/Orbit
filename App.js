@@ -1,16 +1,10 @@
-import { React, useState, useCallback, useEffect,useRef }from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,  } from 'react-native';
+import { React, useState, useEffect }from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useFonts } from 'expo-font';
-import { COLORS } from './src/colors/colors.js';
-import { Sparkle, House, Pill, Planet, Plus} from 'phosphor-react-native';
-import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
-import { Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useNavigationState } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { CommonActions, NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, BottomNavigation, FAB, Portal, PaperProvider } from 'react-native-paper';
+import { NavigationContainer } from '@react-navigation/native';
+import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import { getAuth, onAuthStateChanged, signInWithCredential, GoogleAuthProvider} from 'firebase/auth';
@@ -21,10 +15,6 @@ import useAuthStore from './src/store/useAuthStore.js';
 
 import { NavBar } from './src/components/navbar.js';
 import { TopBar } from './src/components/topbar.js';
-import Home from './src/screens/Home.js';
-import Medication from './src/screens/Medication.js';
-import Orbital from './src/screens/Orbital.js';
-import CareBot from './src/screens/CareBot.js';
 import Profile from './src/screens/Profile.js';
 import Notifications from './src/screens/Notifications.js';
 import Login from './src/screens/authentication/Login';
@@ -36,6 +26,7 @@ import ReminderDetails from './src/screens/actions/reminderDetails.js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/utilities/authProvider.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Test from './src/screens/test.js';
 
 export default function App() {
   // const user = useAuthStore((state) => state.user);
@@ -121,11 +112,12 @@ export default function App() {
           <GestureHandlerRootView>
               <NavigationContainer>
                 <Stack.Navigator initialRouteName={userInfo ? 'NavBar' : 'Landing'}>
-                  <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}/>
+                  <Stack.Screen name="Landing" component={Landing} options={{ headerShown: false }}  />
                   <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                   <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }}/>
                   <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
                   <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
+                  <Stack.Screen name="Test" component={Test} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
                   <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
                   <Stack.Screen 
                     name="ReminderDetails" 

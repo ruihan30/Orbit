@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { db } from '../utilities/firebaseConfig.js';
 import { collection, getDocs, addDoc, getDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import useAuthStore from './useAuthStore.js';
 
 const useAlarmStore = create((set) => ({
   alarms: [],
@@ -74,10 +73,15 @@ const useAlarmStore = create((set) => ({
       const { id, ...alarmWithoutId } = newAlarm;
       const newAlarmRef = await addDoc(collection(db, "user", user.uid, "alarms"), alarmWithoutId);
   
+      const createdAlarm = { id: newAlarmRef.id, ...alarmWithoutId };
+      console.log("New alarm added:", createdAlarm); 
+
       set({ loading: false });
+      return createdAlarm;
     } catch (error) {
       console.error('Error adding alarm in Firestore:', error);
       set({ error: error.message, loading: false });
+      return null;
     }
   },
   deleteAlarm: async (alarmId) => {

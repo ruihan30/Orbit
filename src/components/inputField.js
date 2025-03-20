@@ -1,10 +1,9 @@
 import React from 'react';
 import { useState, forwardRef } from 'react';
-import { View, Text, StyleSheet, Keyboard } from 'react-native';
+import { StyleSheet, Keyboard } from 'react-native';
 import { COLORS } from '../colors/colors.js';
-import { TextInput, Menu, Divider } from 'react-native-paper';
+import { TextInput, Menu } from 'react-native-paper';
 import { CaretDown } from 'phosphor-react-native';
-import { Button } from './button.js';
 
 export const InputField = forwardRef(({ placeholder, style, value, dropdown, numeric, data, multiline, onChangeText, onSelect, required=true, disabled=false }, ref) => {
   const [visible, setVisible] = useState(false);
