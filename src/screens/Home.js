@@ -17,7 +17,8 @@ import * as Permissions from 'expo-permissions';
 import NoAlarms from '../../assets/default_states/no_alarms.svg';
 
 import { db } from '../utilities/firebaseConfig.js';
-import { collection, getDocs, addDoc, getDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const ICONS = [Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse];
 const ICONS_STRING = ['Rabbit', 'Bird', 'Butterfly', 'Cat', 'Cow', 'Dog', 'FishSimple', 'Horse'];
@@ -342,6 +343,34 @@ export default function Home({ onNavigateTo, route }) {
 
     return unsubscribe;
   }, [navigation]);
+ 
+  // ONSNAPSHOT
+  // useEffect(() => {
+  //   const auth = getAuth();
+  //   const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       const medicationsCollection = collection(db, "user", user.uid, "medications");
+
+  //       const unsubscribeMedications = onSnapshot(medicationsCollection, (querySnapshot) => {
+  //         const medicationsList = querySnapshot.docs.map(doc => ({
+  //           id: doc.id,
+  //           ...doc.data(),
+  //         }));
+  //         console.log(medicationsList);
+  //       });
+
+  //       return () => {
+  //         unsubscribeMedications();
+  //       };
+  //     } else {
+  //       console.warn("No user logged in, skipping medication fetch");
+  //     }
+  //   });
+
+  //   return () => {
+  //     unsubscribeAuth();
+  //   };
+  // }, [])
 
   if (loading && fetchingFirebase) 
     return (

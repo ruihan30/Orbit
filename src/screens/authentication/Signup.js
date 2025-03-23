@@ -97,7 +97,7 @@ export default function Signup() {
         createdAt: serverTimestamp(), 
       });
   
-      navigation.navigate('NavBar'); 
+      navigation.navigate('OnboardingMedications'); 
   
     } catch (error) {
       const errorMessage = getErrorMessage(error.code);
