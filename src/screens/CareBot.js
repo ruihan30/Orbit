@@ -28,7 +28,7 @@ export default function CareBot() {
   const [showButton, setShowButton] = useState(false);
   
   const cohere = new CohereClientV2({
-    token: process.env.COHERE_API_KEY,  // Replace <<apiKey>> with your actual API key
+    token: process.env.COHERE_API_KEY, 
   });
 
   const sendToCohere = async () => {
@@ -40,7 +40,6 @@ export default function CareBot() {
     setLoading(true);
 
     try {
-      // const apiResponse = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque a tristique lacus, sit amet posuere tellus. Aliquam erat volutpat. Quisque congue hendrerit consequat. "; // Mocked response
 
       const apiResponse = await cohere.chat({
         model: 'command-r-plus',

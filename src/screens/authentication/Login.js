@@ -193,8 +193,8 @@ export default function Login() {
       {/* Buttons */}
       <View style={loginStyles.buttons}>
         <Button size='large' type='fill' label='Log in' onPress={handleLogin}></Button>
-        <View style={{height: 2, borderTopWidth: 0.5, marginHorizontal: 20, borderColor: COLORS.grey400 }}></View>
-        <Button onPress={() => promptAsync()} size='large' type='outline' label='Log in with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button>
+        {/* <View style={{height: 2, borderTopWidth: 0.5, marginHorizontal: 20, borderColor: COLORS.grey400 }}></View>
+        <Button onPress={() => promptAsync()} size='large' type='outline' label='Log in with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button> */}
       </View>
       
       {/* Footer */}

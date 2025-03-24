@@ -172,8 +172,8 @@ export default function Signup() {
       {/* Buttons */}
       <View style={loginStyles.buttons}>
         <Button size='large' type='fill' label='Continue' onPress={handleSignUp}></Button>
-        <View style={{height: 2, borderTopWidth: 0.5, marginHorizontal: 20, borderColor: COLORS.grey400 }}></View>
-        <Button size='large' type='outline' label='Sign up with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button>
+        {/* <View style={{height: 2, borderTopWidth: 0.5, marginHorizontal: 20, borderColor: COLORS.grey400 }}></View>
+        <Button size='large' type='outline' label='Sign up with Google' icon={<GoogleLogo size={18} color={COLORS.teal900} weight='regular' />}></Button> */}
       </View>
 
       {/* Toast */}

@@ -125,7 +125,6 @@ export default function App() {
                   <Stack.Screen name="OnboardingCarebot" component={OnboardingCarebot} options={{ headerShown: false, animation: "slide_from_right" }}/>
                   <Stack.Screen name="NavBar" component={NavBar} options={{ headerShown: false }}/>
                   <Stack.Screen name="AlarmDetails" component={AlarmDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
-                  <Stack.Screen name="Test" component={Test} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
                   <Stack.Screen name="MedicationDetails" component={MedicationDetails} options={{ headerShown: false, animation: "slide_from_bottom" }}/>
                   <Stack.Screen 
                     name="ReminderDetails" 

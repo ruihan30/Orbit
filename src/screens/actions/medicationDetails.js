@@ -162,7 +162,6 @@ export default function MedicationDetails({ route }) {
   };
 
   const pickImage = async () => {
-    // Request camera permissions
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission needed', 'We need camera permissions to take a picture.');
@@ -175,7 +174,6 @@ export default function MedicationDetails({ route }) {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const photo = result.assets[0];
-      // uploadImage(photo.uri);
       updateMedicationDetails('image', photo.uri);
     }
   };
@@ -313,7 +311,6 @@ export default function MedicationDetails({ route }) {
         
         {/* Input Fields */}
         <View style={{paddingHorizontal: 16, gap: 12, marginBottom: 32, paddingTop: 8}}>
-          {/* <Button size='small' type='fill' label='Test auth store' onPress={test}></Button> */}
 
           <TextInput
             value={medicationDetails.name}

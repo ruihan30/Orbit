@@ -380,7 +380,7 @@ export default function AlarmDetails({ route }) {
 
         {/* Details */}
         <View style={{paddingHorizontal: 16, gap: 28}}>
-          <Button size='small' type='fill' label='test' onPress={() => console.log(alarmDetails)}></Button>
+          {/* <Button size='small' type='fill' label='test' onPress={() => console.log(alarmDetails)}></Button> */}
 
           {/* Time Picker */}
           <View style={styles.timePicker}>

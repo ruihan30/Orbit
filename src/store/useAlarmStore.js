@@ -69,7 +69,6 @@ const useAlarmStore = create((set) => ({
     set({ loading: true });
   
     try {
-      // Exclude the 'id' property from alarmDetails before sending to Firestore
       const { id, ...alarmWithoutId } = newAlarm;
       const newAlarmRef = await addDoc(collection(db, "user", user.uid, "alarms"), alarmWithoutId);
   

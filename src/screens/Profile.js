@@ -229,6 +229,7 @@ export default function Profile() {
   
   return (
     <View style={{backgroundColor: COLORS.white, position: 'relative', padding: 16, flex: 1}}>
+      {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(selectedColor)}></Button> */}
       
       <ScrollView style={{overflow: 'visible', flex: 1, position: 'relative'}} >
       
@@ -238,7 +239,7 @@ export default function Profile() {
           <Pressable 
             style={[styles.avatar, {
               // backgroundColor: COLORS[localUser && RAINBOW_FADED[RAINBOW.indexOf(localUser.profileColor)]], 
-              backgroundColor: COLORS[localUser && localUser.profileColor]
+              backgroundColor: localUser?.profileColor ? COLORS[localUser && localUser.profileColor] : COLORS.grey400
             }]} 
             onPress={() => {openBottomSheet(); setBottomSheetTitle('Choose your avatar');}}
           >
@@ -411,7 +412,7 @@ export default function Profile() {
                     onPress={() => setSelectedAvatar(ICONS_STRING[index])}
                     activeOpacity={1}
                   >
-                    <Icon size={44} color={selectedColor !== 'grey400' ? COLORS.white : COLORS.red} weight='fill'/>
+                    <Icon size={44} color={COLORS.white} weight='fill'/>
                   </TouchableOpacity>
                 ))}
               </View>

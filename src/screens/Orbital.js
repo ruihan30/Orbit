@@ -175,7 +175,7 @@ export default function Orbital() {
                   <Pressable style={[styles.profileImg, {backgroundColor: COLORS.grey200}]} onPress={() => navigation.navigate('Profile')}>
                     <Plus color={COLORS.grey700} weight="regular" />
                   </Pressable>
-                  <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
+                  <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600, textAlign: 'center'}} numberOfLines={1} ellipsizeMode="tail" >Add</Text>
                 </View>
 
               {connectedUsers && connectedUsers.length > 0 ? (connectedUsers.map((user) => (
@@ -196,7 +196,7 @@ export default function Orbital() {
                       <User color={COLORS.white} weight="regular" />
                     )}
                   </View>
-                  <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600,}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
+                  <Text style={{fontSize: 12, width: '100%', fontFamily: 'bg-regular', color: COLORS.grey600, textAlign: 'center'}} numberOfLines={1} ellipsizeMode="tail" >{user.name}</Text>
                 </View>
               ))) : (
                 <></>
@@ -208,12 +208,12 @@ export default function Orbital() {
         
         {data.length > 0 ? (
           <MasonryList
-          data={data}
-          keyExtractor={(item) => item.id}
-          numColumns={1} 
-          renderItem={({ item }) => <GridItem item={item} navigation={navigation} user={user} openBottomSheet={openBottomSheet} setDeletedItem={setDeletedItem}/>}
-          contentContainerStyle={{padding: 4, paddingTop: 120}}
-        />
+            data={data} 
+            keyExtractor={(item) => item.id}
+            numColumns={1} 
+            renderItem={({ item }) => <GridItem item={item} navigation={navigation} user={user} openBottomSheet={openBottomSheet} setDeletedItem={setDeletedItem}/>}
+            contentContainerStyle={{padding: 4, paddingTop: 120}}
+          />
         ) : (
           <View style={[styles.defaultStateContainer, {flex: 1, paddingTop: 100}]}>
             <NoReminders />
