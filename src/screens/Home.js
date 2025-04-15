@@ -22,6 +22,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const ICONS = [Rabbit, Bird, Butterfly, Cat, Cow, Dog, FishSimple, Horse];
 const ICONS_STRING = ['Rabbit', 'Bird', 'Butterfly', 'Cat', 'Cow', 'Dog', 'FishSimple', 'Horse'];
+const dayToWeekdayIndex = { Sun: 1, Mon: 2, Tue: 3, Wed: 4, Thu: 5, Fri: 6, Sat: 7, };
 
 export default function Home({ onNavigateTo, route }) {
   const [image, setImage] = useState(null);
@@ -76,7 +77,74 @@ export default function Home({ onNavigateTo, route }) {
   async function fetchScheduledNotifications() {
     const notifications = await Notifications.getAllScheduledNotificationsAsync();
     console.log(JSON.stringify(notifications, null, 2));
-  }
+  };
+
+  async function scheduleNotification(alarm) {
+    const { time, days } = alarm;
+    const [timeString, ampm] = time.split(' ');
+    const [hour, minute] = timeString.split(':').map(num => parseInt(num, 10));
+
+    let hoursIn24Format = hour;
+    if (ampm === 'pm' && hour !== 12) hoursIn24Format = hour + 12;
+    if (ampm === 'am' && hour === 12) hoursIn24Format = 0;
+
+    console.log(hoursIn24Format, minute);
+  
+    if (alarm.frequency === 'daily') {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Time to take your medication",
+          body: "Don't forget to take your medication. Tap here to check your medications or confirm you've taken it!",
+          data: { data: alarm },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: hoursIn24Format,
+          minute: minute,
+        },
+      });
+
+    } else if ((alarm.frequency === 'custom' || alarm.frequency === 'weekly') && days.length > 0) {
+      const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+      for (let day of days) {
+        const dayIndex = daysOfWeek.indexOf(day);
+  
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Time to take your medication",
+            body: "Don't forget to take your medication. Tap here to check your medications or confirm you've taken it!",
+            data: { data: alarm },
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+            weekday: dayIndex + 1, 
+            hour: hoursIn24Format,
+            minute: minute,
+          },
+        });
+  
+        console.log(`Scheduled notification for ${day} at ${hoursIn24Format}:${minute}`);
+      }
+    }
+  };
+
+  async function cancelNotificationByAlarmId(targetAlarmId) {
+    const notifications = await Notifications.getAllScheduledNotificationsAsync();
+  
+    for (const notification of notifications) {
+      const alarmId = notification.content?.data?.data?.id;
+      
+      if (alarmId === targetAlarmId) {
+        const identifier = notification.identifier;
+        await Notifications.cancelScheduledNotificationAsync(identifier);
+        console.log(`Cancelled notification with identifier: ${identifier}`);
+        // return;
+      }
+    };
+  
+    // console.log(`No notification found for alarmId: ${targetAlarmId}`);
+  };
 
   Notifications.addNotificationResponseReceivedListener(response => {
     console.log('Notification action received:', response);
@@ -158,6 +226,12 @@ export default function Home({ onNavigateTo, route }) {
 
   const handleToggleEnabled = (alarmId) => {
     const updatedAlarm = alarms.find((alarm) => alarm.id === alarmId);
+    console.log(updatedAlarm);
+
+    if (updatedAlarm.enabled == true) {
+      cancelNotificationByAlarmId(updatedAlarm.id);
+    }
+    else scheduleNotification(updatedAlarm);
     
     if (updatedAlarm) {
       const updatedAlarmData = { ...updatedAlarm, enabled: !updatedAlarm.enabled };
@@ -257,7 +331,7 @@ export default function Home({ onNavigateTo, route }) {
   };
 
   useEffect(() => {
-    if (!fetchingFirebase) {
+    if (fetchingFirebase) {
       const grouped = groupAlarmsByDay(alarms);
       setGroupedAlarms(grouped);
       const alarmsForDay = grouped?.[today.day] || [];
@@ -392,8 +466,9 @@ export default function Home({ onNavigateTo, route }) {
           {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
           {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
           {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
-          {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(selectedUser)}></Button>
-          <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button> */}
+          {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(selectedDay)}></Button> */}
+          {/* <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button> */}
+          {/* <Button size='small' type='fill' label='cancel scheduled notification' onPress={async () => {await cancelNotificationByAlarmId('E999sYVpl5ekQbyRQ7RP');}}></Button> */}
           {/* <Button size='small' type='fill' label='Test notifications' onPress={() => navigation.navigate('OnboardingMedications')}></Button> */}
           {/* <Button size='small' type='fill' label='Test image picker' onPress={() => console.log(image)}></Button> */}
           
@@ -459,7 +534,7 @@ export default function Home({ onNavigateTo, route }) {
             </View>
 
             {/* Calendar */}
-            <View style={{padding: 12}}>
+            <View style={{padding: 12}} ref={targetRef}>
               <View style={styles.calendar}>
                 <Text style={{fontFamily: 's-semibold', fontSize: 16, color: COLORS.grey450, textAlign: 'center'}}> {today.month} </Text>
                 <View style={styles.week}>
@@ -568,7 +643,7 @@ export default function Home({ onNavigateTo, route }) {
               </Menu>
               
               {/* Alarms */}
-              <View style={styles.alarms} ref={targetRef}>
+              <View style={styles.alarms}>
 
                 {loading ? (
                   <View 
