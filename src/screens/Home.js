@@ -41,7 +41,6 @@ export default function Home({ onNavigateTo, route }) {
   const [groupedAlarms, setGroupedAlarms] = useState(null);
   const [connectedUsers, setConnectedUsers] = useState();
 
-  const [isVisible, setIsVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState();
   const { width, height } = Dimensions.get('window');
@@ -61,6 +60,7 @@ export default function Home({ onNavigateTo, route }) {
     closeMenu();
   };
 
+  // Notifications
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -159,16 +159,7 @@ export default function Home({ onNavigateTo, route }) {
     }
   });
 
-  const handleScroll = (event) => {
-    const contentOffsetY = event.nativeEvent.contentOffset.y;
-
-    if (contentOffsetY > 40) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  };
-
+  // misc.
   function getCurrentWeek() {
     const today = new Date(); 
     const dayOfWeek = today.getDay(); 
@@ -491,7 +482,6 @@ export default function Home({ onNavigateTo, route }) {
           
           <ScrollView 
             showsVerticalScrollIndicator={false}
-            onScroll={handleScroll}
             refreshControl={
               <RefreshControl refreshing={loading} onRefresh={onRefresh} />
             }
