@@ -69,6 +69,11 @@ export default function Home({ onNavigateTo, route }) {
     }),
   });
 
+  async function cancelAllScheduledNotifications() {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    console.log("All scheduled notifications have been canceled");
+  }
+
   const askNotificationPermission = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
     return status === 'granted';
@@ -253,7 +258,8 @@ export default function Home({ onNavigateTo, route }) {
     await fetchUser();
     await fetchMedications();
     await fetchAlarms(); 
-    setLoading(false);
+    setFetchingFirebase(true);
+    // setLoading(false);
   };
 
   const fetchConnectedUsers = async (connectedUserIds) => {
@@ -300,6 +306,8 @@ export default function Home({ onNavigateTo, route }) {
         setSelectedDay(getFormattedDate(today));
         setAlarmsForSelectedDay(alarmsForDay || []);
       } else {
+        setSelectedDay(getFormattedDate(today));
+        setAlarmsForSelectedDay([]);
         console.log("No alarms found");
       }
 
@@ -332,6 +340,7 @@ export default function Home({ onNavigateTo, route }) {
 
   useEffect(() => {
     if (fetchingFirebase) {
+      console.log(alarms);
       const grouped = groupAlarmsByDay(alarms);
       setGroupedAlarms(grouped);
       const alarmsForDay = grouped?.[today.day] || [];
@@ -352,23 +361,29 @@ export default function Home({ onNavigateTo, route }) {
       };
   
       fetchData();
+      setFetchingFirebase(false);
+      setLoading(false);
     }
-
-    setFetchingFirebase(false);
-    setLoading(false);
   }, [alarms, fetchingFirebase]);
 
   // when focused after coming back from another page
   useFocusEffect(
     useCallback(() => {
-      fetchUser();
-      fetchMedications();
-      fetchAlarms();
-      // if (route?.params?.message) {
-      //   console.log('Data received from previous screen:', route.params.message);
-      // } else {
-      //   console.log('no params passed back')
-      // }
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          await fetchUser();
+          await fetchMedications();
+          await fetchAlarms();
+          setFetchingFirebase(true);
+          // console.log('data fetched');
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+    
+      fetchData();
+      console.log('focused');
     }, [])
   );
 
@@ -381,6 +396,7 @@ export default function Home({ onNavigateTo, route }) {
         await fetchMedications();
         await fetchAlarms();
         setFetchingFirebase(true);
+        console.log('data fetched');
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -466,7 +482,8 @@ export default function Home({ onNavigateTo, route }) {
           {/* <Button size='small' type='fill' label='Test alarms' onPress={() => console.log(alarmsForSelectedDay)}></Button> */}
           {/* <Button size='small' type='fill' label='Add Alarm' onPress={() => navigation.navigate('AlarmDetails')}></Button> */}
           {/* <Button size='small' type='fill' label='Test navigating to other tabs' onPress={() => onNavigateTo(1)}></Button> */}
-          {/* <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(selectedDay)}></Button> */}
+          <Button size='small' type='fill' label='Test auth store' onPress={() => console.log(alarms)}></Button>
+          <Button size='small' type='fill' label='cancel all scheduled notifications' onPress={async () => {await cancelAllScheduledNotifications();}}></Button>
           {/* <Button size='small' type='fill' label='fetch scheduled notifications' onPress={async () => {await fetchScheduledNotifications();}}></Button> */}
           {/* <Button size='small' type='fill' label='cancel scheduled notification' onPress={async () => {await cancelNotificationByAlarmId('E999sYVpl5ekQbyRQ7RP');}}></Button> */}
           {/* <Button size='small' type='fill' label='Test notifications' onPress={() => navigation.navigate('OnboardingMedications')}></Button> */}
@@ -660,14 +677,14 @@ export default function Home({ onNavigateTo, route }) {
                     alarmsForSelectedDay.map((alarm, index) => (
                       <TouchableRipple
                         style={[styles.alarmItem, {
-                          backgroundColor: selectedUser == user ? COLORS.white : COLORS.grey100
+                          backgroundColor: selectedUser.uid == user.uid ? COLORS.white : COLORS.grey100
                         }]} 
                         key={index}
                         onPress={() => navigation.navigate('AlarmDetails', { alarm: alarm })}
                         rippleColor={'rgba(51,51,51,0.25)'}
                         borderless={true}
                         delayPressIn={80}
-                        disabled={selectedUser == user ? false : true}
+                        disabled={selectedUser.uid == user.uid ? false : true}
                       >
                         <View>
                           <View style={[styles.flexRow, {gap: 16, justifyContent: 'space-between', paddingLeft: 12, paddingVertical: 8, marginBottom: 8}]}>
