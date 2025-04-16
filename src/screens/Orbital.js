@@ -280,7 +280,7 @@ const GridItem = ({ item, navigation, user, openBottomSheet , setDeletedItem }) 
         // borderColor: COLORS[RAINBOW[RAINBOW_FADED.indexOf(item.postColor)]]
       }]} 
       onPress={() => {
-        if (user.uid == item.recipient) navigation.navigate('ReminderDetails', { post: item });
+        if (user.uid == item.postedById) navigation.navigate('ReminderDetails', { post: item });
       }}
       onLongPress={() => {
         openBottomSheet();

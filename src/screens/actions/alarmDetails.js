@@ -236,7 +236,7 @@ export default function AlarmDetails({ route }) {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Time to take your medication",
-          body: "Don't forget to take your medication. Tap here to check your medications or confirm you've taken it!",
+          body: "Don't forget to take your medication!",
           data: { data: alarm },
         },
         trigger: {
@@ -536,9 +536,11 @@ export default function AlarmDetails({ route }) {
                             <Text style={{fontFamily: 'bg-regular', fontSize: 14, color: COLORS.grey600}} numberOfLines={4}>
                               <Text style={{fontFamily: 'bg-bold'}}>{med.dosage} {med.medicineType} </Text> 
                                 to be taken/applied {med.mealTime} {''}
-                                {med.frequency === 'daily' || med.frequency === 'weekly' ? 
+                                {med.frequency === 'daily' &&
+                                  <Text>{med.frequency} every {med.details} hours</Text>
+                                }
+                                {med.frequency === 'weekly' &&
                                   <Text>{med.frequency} every {med.details}</Text>
-                                  : <Text>{med.details}</Text>
                                 } {''}
                                 {med.purpose && (
                                   <Text>for {med.purpose}</Text>
